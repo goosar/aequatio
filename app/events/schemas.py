@@ -1,9 +1,9 @@
 from uuid import UUID, uuid4
 import datetime
 from typing import Optional, Dict, Any, Generic, TypeVar, Literal
+
 # pydantic may not have stubs available in the environment; tell mypy to ignore import errors
 from pydantic import BaseModel, Field, EmailStr, AwareDatetime, ConfigDict  # type: ignore[import]
-
 
 
 T = TypeVar("T")
