@@ -8,3 +8,11 @@ dependencies = [
     "fastapi>=0.118.2",
     "sqlalchemy>=2.0.43",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "mypy",
+    "pytest",
+    "black",
+]

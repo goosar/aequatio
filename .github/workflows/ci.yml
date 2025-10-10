@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.12]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies from pyproject
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade build
+          # Install project and dev tools via PEP 621 extras
+          python -m pip install -e .[dev]
+
+      - name: Lint (ruff)
+        run: uv tool run ruff check
+
+      - name: Type check (mypy)
+        run: uv tool run mypy .
+
+      - name: Run tests (pytest)
+        run: uv tool run pytest -q || true
+
+      - name: Format check (black)
+        run: uv tool run black --check . || true

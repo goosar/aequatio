@@ -1,28 +1,32 @@
 from uuid import UUID, uuid4
+import datetime
+from typing import Optional, Dict, Any, Generic, TypeVar, Literal
 # pydantic may not have stubs available in the environment; tell mypy to ignore import errors
 from pydantic import BaseModel, Field, EmailStr, AwareDatetime, ConfigDict  # type: ignore[import]
-from typing import Optional, Dict, Any, Generic, TypeVar, Literal
-import datetime
+
 
 
 T = TypeVar("T")
+
 
 def now_utc() -> datetime.datetime:
     """Return timezone-aware UTC datetime."""
     return datetime.datetime.now(datetime.timezone.utc)
 
+
 class EventMetadata(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     id: UUID = Field(default_factory=uuid4)
-    event_type: str               # e.g. "expense.created"
-    version: int = 1              # event schema version
+    event_type: str  # e.g. "expense.created"
+    version: int = 1  # event schema version
     source: str = "aequatio"
     created_at: AwareDatetime = Field(default_factory=now_utc)
     correlation_id: Optional[UUID] = None
     trace_id: Optional[str] = None
     schema_id: Optional[str] = None
     extras: Optional[Dict[str, Any]] = None
+
 
 class Event(BaseModel, Generic[T]):
     model_config = ConfigDict(extra="forbid")
@@ -37,10 +41,12 @@ class Event(BaseModel, Generic[T]):
     def from_json(cls, raw: str) -> "Event[Any]":
         return cls.model_validate_json(raw)
 
+
 class ExpanseEvent(BaseModel):
     expense_id: UUID
     paid_by_user_id: UUID
     timestamp: AwareDatetime = Field(default_factory=now_utc)
+
 
 class ExpenseCreatedEvent(ExpanseEvent):
     amount_cents: int
@@ -49,14 +55,17 @@ class ExpenseCreatedEvent(ExpanseEvent):
     description: Optional[str] = None
     group_id: UUID
 
+
 class ExpenseUpdatedEvent(ExpanseEvent):
     amount_cents: int
     currency: str = "EUR"
     category: str
     description: Optional[str] = None
 
+
 class ExpenseDeletedEvent(ExpanseEvent):
     pass
+
 
 class UserCreatedEvent(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -67,17 +76,21 @@ class UserCreatedEvent(BaseModel):
 
 
 EventType = Literal[
-    "expense.created", "expense.updated", "expense.deleted",
-    "user.created"
+    "expense.created", "expense.updated", "expense.deleted", "user.created"
 ]
 
-def make_event(payload: T, event_type: EventType, *,
-               version: int = 1,
-               source: str = "aequatio",
-               correlation_id: UUID | None = None,
-               trace_id: str | None = None,
-               schema_id: str | None = None,
-               extras: Dict[str, Any] | None = None) -> Event[T]:
+
+def make_event(
+    payload: T,
+    event_type: EventType,
+    *,
+    version: int = 1,
+    source: str = "aequatio",
+    correlation_id: UUID | None = None,
+    trace_id: str | None = None,
+    schema_id: str | None = None,
+    extras: Dict[str, Any] | None = None,
+) -> Event[T]:
     meta = EventMetadata(
         event_type=event_type,
         version=version,
