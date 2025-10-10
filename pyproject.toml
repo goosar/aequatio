@@ -1,0 +1,10 @@
+[project]
+name = "aequatio"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.118.2",
+    "sqlalchemy>=2.0.43",
+]
