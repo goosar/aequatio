@@ -6,7 +6,7 @@ export default function Header(){
           <div className="bg-white/20 p-2 rounded-md">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L15 8H9L12 2Z" fill="white" opacity="0.9"/></svg>
           </div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Equation</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight">Aequatio</h1>
         </div>
         <nav className="space-x-6 text-sm opacity-95">
           <a className="hover:underline" href="#">Home</a>

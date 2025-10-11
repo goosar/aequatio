@@ -6,7 +6,7 @@ Create Date: 2025-10-10 00:00:00.000000
 
 """
 
-from alembic import op
+from alembic import op  # type: ignore[attr-defined]
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 
