@@ -1,16 +1,16 @@
 from __future__ import annotations
-import json
-import time
-import logging
+
 import datetime
+import json
+import logging
+import time
 from typing import Iterable, Optional
 
 import pika  # type: ignore[import]
+from persistence.models.Outbox import OutboxEvent
 from sqlalchemy import select, update
-from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
-
-from app.outbox.models import OutboxEvent
+from sqlalchemy.orm import Session, sessionmaker
 
 log = logging.getLogger("outbox.dispatcher")
 log.setLevel(logging.INFO)
@@ -43,9 +43,7 @@ class OutboxDispatcher:
     def stop(self) -> None:
         self._stopped = True
 
-    def _publish(
-        self, routing_key: str, body: bytes, headers: Optional[dict] = None
-    ) -> None:
+    def _publish(self, routing_key: str, body: bytes, headers: Optional[dict] = None) -> None:
         """
         Blocking publish using pika. For production consider connection pooling, confirm channels, and retries.
         """
@@ -54,9 +52,7 @@ class OutboxDispatcher:
         try:
             ch = conn.channel()
             # ensure exchange exists (topic)
-            ch.exchange_declare(
-                exchange="domain.events", exchange_type="topic", durable=True
-            )
+            ch.exchange_declare(exchange="domain.events", exchange_type="topic", durable=True)
             props = pika.BasicProperties(
                 headers=headers or {}, content_type="application/json", delivery_mode=2
             )
@@ -104,9 +100,7 @@ class OutboxDispatcher:
                                 "aggregate_id": evt.aggregate_id,
                                 "event_version": str(evt.event_version),
                             }
-                            self._publish(
-                                routing_key=routing_key, body=body, headers=headers
-                            )
+                            self._publish(routing_key=routing_key, body=body, headers=headers)
 
                             # mark published
                             now = datetime.datetime.utcnow()
@@ -121,9 +115,7 @@ class OutboxDispatcher:
                             )
                             session.execute(stmt)
                             session.commit()
-                            log.info(
-                                "Published outbox event %s %s", evt.id, routing_key
-                            )
+                            log.info("Published outbox event %s %s", evt.id, routing_key)
                         except Exception as pub_err:
                             # record failure and allow retries
                             try:

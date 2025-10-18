@@ -1,10 +1,31 @@
 {
+    // --- Python analysis ---
     "python.analysis.extraPaths": [
-        "./app"
+        "./app",
+        "./alembic"
     ],
+    "python.analysis.typeCheckingMode": "off",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingImports": "none"
+    },
+    // --- Testing ---
     "python.testing.pytestArgs": [
         "app"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    // --- Ruff setup ---
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    "ruff.lint.enable": true,
+    "ruff.lint.run": "onSave",
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "always",
+        "source.organizeImports": "always"
+    },
+    // --- Disable legacy linting system ---
+    "python.linting.enabled": false
 }

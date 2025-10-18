@@ -1,10 +1,10 @@
 from __future__ import annotations
+
 import datetime
 from typing import Any, Dict, Optional
 
+from persistence.models.Outbox import OutboxEvent
 from sqlalchemy.orm import Session
-
-from app.outbox.models import OutboxEvent
 
 
 def add_outbox_event(

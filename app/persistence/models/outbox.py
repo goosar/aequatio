@@ -13,11 +13,8 @@ from sqlalchemy import (
     Index,
 )
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import DeclarativeBase
+from app.core.database import Base  # Import from unified location
 
-
-class Base(DeclarativeBase):  # changed to subclass DeclarativeBase
-    pass
 
 
 class OutboxEvent(Base):
