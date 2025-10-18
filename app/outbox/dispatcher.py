@@ -7,10 +7,11 @@ import time
 from typing import Iterable, Optional
 
 import pika  # type: ignore[import]
-from persistence.models.Outbox import OutboxEvent
 from sqlalchemy import select, update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
+
+from app.persistence.models.outbox import OutboxEvent
 
 log = logging.getLogger("outbox.dispatcher")
 log.setLevel(logging.INFO)

@@ -230,7 +230,7 @@ class User(BaseModel):
             payload: Event payload (Pydantic model).
             event_type: Event type identifier.
         """
-        event = make_event(payload, event_type)
+        event = make_event(payload, event_type)  # type: ignore[arg-type]
         self.domain_events.append(event)
 
     def update_event_user_id(self, user_id: UUID) -> None:
