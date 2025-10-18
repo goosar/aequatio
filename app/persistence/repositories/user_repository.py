@@ -5,6 +5,7 @@ publishes domain events to the transactional outbox when saving aggregates.
 """
 
 from typing import Optional
+from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -113,11 +114,11 @@ class UserRepository:
                 raise ValueError(f"Email '{user.email}' already registered") from e
             raise ValueError("User save failed due to constraint violation") from e
 
-    def get_by_id(self, user_id: int) -> Optional[UserEntity]:
+    def get_by_id(self, user_id: UUID) -> Optional[UserEntity]:
         """Find user by ID.
 
         Args:
-            user_id: User ID to search for.
+            user_id: User UUID to search for.
 
         Returns:
             User domain entity if found, None otherwise.

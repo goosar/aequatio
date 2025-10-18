@@ -8,6 +8,7 @@ events when state changes occur.
 
 from datetime import datetime
 from typing import List, Optional
+from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -49,7 +50,7 @@ class User(BaseModel):
     """
 
     # Identity
-    id: Optional[int] = None
+    id: Optional[UUID] = None
     username: str = Field(..., min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_]+$")
     email: EmailStr
 
@@ -232,13 +233,13 @@ class User(BaseModel):
         event = make_event(payload, event_type)
         self.domain_events.append(event)
 
-    def update_event_user_id(self, user_id: int) -> None:
+    def update_event_user_id(self, user_id: UUID) -> None:
         """Update user_id in pending events after database insert.
 
         This is called by the repository after getting the auto-generated ID.
 
         Args:
-            user_id: Database-generated user ID.
+            user_id: Database-generated user ID (UUID).
         """
         self.id = user_id
         for event in self.domain_events:

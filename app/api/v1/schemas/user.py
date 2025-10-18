@@ -5,6 +5,7 @@ ensuring type safety and validation.
 """
 
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
@@ -53,14 +54,14 @@ class UserResponse(BaseModel):
     """Response schema for user data (excludes sensitive fields).
 
     Attributes:
-        id: Unique user identifier.
+        id: Unique user identifier (UUID).
         username: User's username.
         email: User's email address.
         is_active: Whether the account is active.
         created_at: Account creation timestamp.
     """
 
-    id: int
+    id: UUID
     username: str
     email: str
     is_active: bool
@@ -70,7 +71,7 @@ class UserResponse(BaseModel):
         from_attributes = True  # Enables ORM mode for SQLAlchemy models
         json_schema_extra = {
             "example": {
-                "id": 123,
+                "id": "550e8400-e29b-41d4-a716-446655440000",
                 "username": "john_doe",
                 "email": "john@example.com",
                 "is_active": True,

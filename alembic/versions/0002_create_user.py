@@ -8,12 +8,13 @@ Create Date: 2025-10-18 10:00:00.000000
 """
 
 import sqlalchemy as sa
+import sqlalchemy.dialects.postgresql as pg
 
 from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "0002"
-down_revision = "0001"
+down_revision = "0001_create_events_outbox"
 branch_labels = None
 depends_on = None
 
@@ -22,7 +23,13 @@ def upgrade() -> None:
     """Create users table with indexes and constraints."""
     op.create_table(
         "users",
-        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column(
+            "id",
+            pg.UUID(as_uuid=True),
+            primary_key=True,
+            server_default=sa.text("gen_random_uuid()"),
+            nullable=False,
+        ),
         sa.Column("username", sa.String(), nullable=False),
         sa.Column("email", sa.String(), nullable=False),
         sa.Column("hashed_password", sa.String(), nullable=False),

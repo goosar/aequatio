@@ -10,6 +10,7 @@ Key differences:
 """
 
 from typing import Any, Dict, Optional
+from uuid import UUID
 
 from sqlalchemy.orm import Session
 
@@ -92,11 +93,11 @@ class UserApplicationService:
             self.db.rollback()
             raise
 
-    def get_user_by_id(self, user_id: int) -> Optional[User]:
+    def get_user_by_id(self, user_id: UUID) -> Optional[User]:
         """Retrieve user by ID.
 
         Args:
-            user_id: User identifier.
+            user_id: User identifier (UUID).
 
         Returns:
             User entity if found, None otherwise.
@@ -114,11 +115,11 @@ class UserApplicationService:
         """
         return self.user_repo.get_by_username(username)
 
-    def deactivate_user(self, user_id: int) -> User:
+    def deactivate_user(self, user_id: UUID) -> User:
         """Deactivate a user account (use case).
 
         Args:
-            user_id: ID of user to deactivate.
+            user_id: UUID of user to deactivate.
 
         Returns:
             Updated user entity.

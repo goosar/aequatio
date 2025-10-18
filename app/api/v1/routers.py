@@ -6,6 +6,8 @@ to hide database/infrastructure concerns from the API layer.
 Compare with the current routers.py to see the difference in approach.
 """
 
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
@@ -14,6 +16,24 @@ from app.application.services.user_service import UserApplicationService
 from app.core.database import get_db
 
 router = APIRouter()
+
+
+@router.get(
+    "/",
+    summary="API Welcome",
+    tags=["Health"],
+)
+async def root():
+    """Welcome endpoint for the API.
+
+    Returns:
+        Welcome message with API information.
+    """
+    return {
+        "message": "Welcome to Aequatio API",
+        "version": "1.0.0",
+        "docs": "/docs",
+    }
 
 
 def get_user_service(db: Session = Depends(get_db)) -> UserApplicationService:
@@ -85,11 +105,11 @@ async def register_user(
 
 
 @router.get("/users/{user_id}", response_model=UserResponse, tags=["Users"])
-async def get_user(user_id: int, user_service: UserApplicationService = Depends(get_user_service)):
+async def get_user(user_id: UUID, user_service: UserApplicationService = Depends(get_user_service)):
     """Get user by ID.
 
     Args:
-        user_id: User identifier.
+        user_id: User identifier (UUID).
         user_service: Injected application service.
 
     Returns:

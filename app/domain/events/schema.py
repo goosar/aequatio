@@ -302,7 +302,7 @@ class UserRegisteredPayload(BaseModel):
         },
     )
 
-    user_id: int = Field(..., gt=0, description="Unique user identifier")
+    user_id: UUID = Field(..., description="Unique user identifier (UUID)")
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr = Field(..., description="User's email address")
     timestamp: AwareDatetime = Field(
