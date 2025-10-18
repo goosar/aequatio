@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv  # type: ignore[import-not-found]
 
 load_dotenv()  # Load environment variables from .env file

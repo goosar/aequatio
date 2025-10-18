@@ -5,17 +5,17 @@ It handles the storage and retrieval of user data including authentication
 and audit information.
 """
 
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
-from sqlalchemy.sql import func
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, text
+
 from app.core.database import Base
 
 
 class User(Base):
     """User database model.
-    
+
     Represents a user entity in the database with authentication credentials
     and audit timestamps.
-    
+
     Attributes:
         id: Unique identifier for the user (primary key).
         username: Unique username for login and identification.
@@ -24,7 +24,7 @@ class User(Base):
         is_active: Flag indicating if the user account is active.
         created_at: Timestamp of user creation (auto-generated).
         updated_at: Timestamp of last update (auto-updated on modification).
-    
+
     Example:
         >>> user = User(
         ...     username="john_doe",
@@ -35,7 +35,7 @@ class User(Base):
         >>> session.add(user)
         >>> session.commit()
     """
-    
+
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -43,12 +43,12 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
+    updated_at = Column(DateTime(timezone=True), onupdate=text("CURRENT_TIMESTAMP"))
 
     def __repr__(self) -> str:
         """Return string representation of the User instance.
-        
+
         Returns:
             String representation showing username and active status.
         """

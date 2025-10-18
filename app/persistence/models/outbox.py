@@ -1,20 +1,13 @@
 from __future__ import annotations
-import uuid
+
 import datetime
+import uuid
 from typing import Any, Dict
 
-from sqlalchemy import (
-    Column,
-    String,
-    Integer,
-    DateTime,
-    Text,
-    JSON,
-    Index,
-)
+from sqlalchemy import JSON, Column, DateTime, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from app.core.database import Base  # Import from unified location
 
+from app.core.database import Base  # Import from unified location
 
 
 class OutboxEvent(Base):
@@ -26,12 +19,8 @@ class OutboxEvent(Base):
     event_type = Column(String(length=200), nullable=False)
     event_version = Column(Integer, nullable=False, default=1)
     payload = Column(JSON, nullable=False)
-    occurred_at = Column(
-        DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow
-    )
-    created_at = Column(
-        DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow
-    )
+    occurred_at = Column(DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow)
     published_at = Column(DateTime(timezone=False), nullable=True, index=True)
     attempt_count = Column(Integer, nullable=False, default=0)
     last_error = Column(Text, nullable=True)
@@ -48,9 +37,7 @@ class OutboxEvent(Base):
             "payload": self.payload,
             "occurred_at": self.occurred_at.isoformat() if self.occurred_at else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "published_at": (
-                self.published_at.isoformat() if self.published_at else None
-            ),
+            "published_at": (self.published_at.isoformat() if self.published_at else None),
             "attempt_count": self.attempt_count,
             "last_error": self.last_error,
         }

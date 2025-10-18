@@ -1,3 +1,4 @@
+# pylint: disable=import-error,no-member
 """create events_outbox table
 
 Revision ID: 0001_create_events_outbox
@@ -6,10 +7,10 @@ Create Date: 2025-10-10 00:00:00.000000
 
 """
 
-from alembic import op  # type: ignore[attr-defined]
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 
+from alembic import op  # type: ignore[attr-defined] pylint: disable=import-error
 
 # revision identifiers, used by Alembic.
 revision = "0001_create_events_outbox"
@@ -33,9 +34,7 @@ def upgrade() -> None:
         sa.Column("event_version", sa.Integer(), nullable=False),
         sa.Column("payload", sa.JSON(), nullable=False),
         sa.Column("occurred_at", sa.DateTime(), nullable=False),
-        sa.Column(
-            "created_at", sa.DateTime(), nullable=False, server_default=sa.text("now()")
-        ),
+        sa.Column("created_at", sa.DateTime(), nullable=False, server_default=sa.text("now()")),
         sa.Column("published_at", sa.DateTime(), nullable=True),
         sa.Column("attempt_count", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("last_error", sa.Text(), nullable=True),

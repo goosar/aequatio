@@ -78,10 +78,10 @@ alembic-revision:
 	$(COMPOSE) exec $(APP) uv run alembic revision --autogenerate -m "$(M)"
 
 lint:
-	uv tool run ruff check
+	uv tool run ruff check .
 
 lint-fix:
-	uv tool run ruff check --fix
+	uv tool run ruff check . --fix
 
 format:
 	uv tool run black .
