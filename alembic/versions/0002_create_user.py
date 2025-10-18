@@ -10,7 +10,7 @@ Create Date: 2025-10-18 10:00:00.000000
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 
-from alembic import op
+from alembic import op  # type: ignore  # pylint: disable=import-error
 
 # revision identifiers, used by Alembic.
 revision = "0002"

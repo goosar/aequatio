@@ -10,7 +10,7 @@ Create Date: 2025-10-10 00:00:00.000000
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 
-from alembic import op  # type: ignore[attr-defined] pylint: disable=import-error
+from alembic import op  # type: ignore  # pylint: disable=import-error
 
 # revision identifiers, used by Alembic.
 revision = "0001_create_events_outbox"
