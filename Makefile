@@ -10,7 +10,7 @@ LOCAL_DB_URL ?= postgresql+psycopg2://postgres:postgres@localhost:5432/aequatio
 # default compose network (project_default). Override if your project name differs.
 NETWORK ?= aequatio_default
 
-.PHONY: help up down build restart ps logs exec-app psql migrate migrate-run alembic-revision db-only migrate-local run-local local
+.PHONY: help up down build restart ps logs exec-app psql migrate migrate-run alembic-revision db-only migrate-local run-local run-frontend local
 
 help:
 	@echo "Available targets:"
@@ -29,6 +29,7 @@ help:
 	@echo "  db-only           Start only database in Docker"
 	@echo "  migrate-local     Run migrations against local database (localhost:5432)"
 	@echo "  run-local         Run FastAPI locally (requires db-only + migrate-local first)"
+	@echo "  run-frontend      Run frontend dev server (localhost:5173)"
 	@echo "  local             Complete local dev setup: start db, run migrations, start app locally"
 	@echo "  lint             Run linter (ruff)"
 	@echo "  lint-fix         Run linter and auto-fix issues (ruff --fix)"
@@ -81,6 +82,10 @@ run-local:
 	@echo "Make sure you ran 'make db-only' and 'make migrate-local' first!"
 	@powershell -Command "$$env:DATABASE_URL='$(LOCAL_DB_URL)'; uv run uvicorn main:app --host 127.0.0.1 --port 8000 --reload"
 
+run-frontend:
+	@echo "Starting frontend development server..."
+	@cd frontend && npm run dev
+
 local: db-only migrate-local
 	@echo ""
 	@echo "=========================================="
@@ -124,7 +129,7 @@ format:
 	uv tool run black .
 
 test:
-	uv tool run pytest -q
+	uv run pytest -q
 
 typecheck:
 	uv tool run mypy .

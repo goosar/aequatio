@@ -8,7 +8,7 @@ events when state changes occur.
 
 from datetime import datetime
 from typing import List, Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -130,8 +130,12 @@ class User(BaseModel):
         # Hash password
         hashed_password = hash_password(plain_password)
 
+        # Generate UUID for the new user
+        user_id = uuid4()
+
         # Create entity
         user = User(
+            id=user_id,
             username=username,
             email=email,
             hashed_password=hashed_password,
@@ -142,7 +146,7 @@ class User(BaseModel):
         # Emit domain event (will be committed to outbox after persistence)
         user._raise_event(
             UserRegisteredPayload(
-                user_id=user.id or 0,  # Will be updated after DB insert
+                user_id=user_id,
                 username=user.username,
                 email=user.email,
                 metadata=metadata or {},
