@@ -577,7 +577,9 @@ class TestUserApplicationServiceEdgeCases:
         mock_repo.save.return_value = mock_user
 
         # Act
-        result = service.register_user("john_doe", "john@example.com", "SecurePass123!", metadata={})
+        result = service.register_user(
+            "john_doe", "john@example.com", "SecurePass123!", metadata={}
+        )
 
         # Assert
         assert result is not None
@@ -596,7 +598,9 @@ class TestUserApplicationServiceEdgeCases:
         mock_repo.save.return_value = mock_user
 
         # Act
-        result = service.register_user("john_doe", "john@example.com", "SecurePass123!", metadata=None)
+        result = service.register_user(
+            "john_doe", "john@example.com", "SecurePass123!", metadata=None
+        )
 
         # Assert
         assert result is not None
@@ -634,7 +638,9 @@ class TestUserApplicationServiceEdgeCases:
             ("user_with_123", "user123@example.com", "UserPass123!"),
         ],
     )
-    def test_register_user_with_various_valid_inputs(self, username: str, email: str, password: str):
+    def test_register_user_with_various_valid_inputs(
+        self, username: str, email: str, password: str
+    ):
         """Test registration with various valid input combinations."""
         # Arrange
         mock_db = Mock()

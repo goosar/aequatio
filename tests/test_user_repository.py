@@ -2,7 +2,7 @@
 
 This module tests the repository layer, focusing on:
 - Domain entity to persistence model mapping
-- Transactional outbox event publishing  
+- Transactional outbox event publishing
 - Database operations (save, retrieve, check existence)
 - Error handling and rollback scenarios
 
@@ -33,7 +33,7 @@ class TestUserRepositorySaveInsert:
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
-        
+
         # Create user with None ID (insert path)
         user = UserEntity(
             id=None,
@@ -43,7 +43,7 @@ class TestUserRepositorySaveInsert:
             is_active=True,
             created_at=datetime.datetime(2025, 1, 1, 12, 0, 0),
         )
-        
+
         # Mock the created model
         created_model = Mock(spec=UserModel)
         created_model.id = uuid4()
@@ -53,11 +53,11 @@ class TestUserRepositorySaveInsert:
         created_model.is_active = user.is_active
         created_model.created_at = user.created_at
         created_model.updated_at = None
-        
+
         # Mock add to simulate model creation
         def mock_add(model):
             model.id = created_model.id
-        
+
         db.add.side_effect = mock_add
 
         # Act
@@ -73,7 +73,7 @@ class TestUserRepositorySaveInsert:
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
-        
+
         user = UserEntity(
             id=None,
             username="existing_user",
@@ -82,7 +82,7 @@ class TestUserRepositorySaveInsert:
             is_active=True,
             created_at=datetime.datetime.utcnow(),
         )
-        
+
         # Mock IntegrityError for duplicate username - orig needs to stringify to contain "username"
         orig_mock = Mock()
         orig_mock.__str__ = Mock(return_value="UNIQUE constraint failed: users.username")
@@ -92,7 +92,7 @@ class TestUserRepositorySaveInsert:
         # Act & Assert
         with pytest.raises(ValueError, match="Username 'existing_user' already exists"):
             repo.save(user)
-        
+
         db.rollback.assert_called_once()
 
     def test_save_raises_error_on_duplicate_email(self):
@@ -100,7 +100,7 @@ class TestUserRepositorySaveInsert:
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
-        
+
         user = UserEntity(
             id=None,
             username="new_user",
@@ -109,7 +109,7 @@ class TestUserRepositorySaveInsert:
             is_active=True,
             created_at=datetime.datetime.utcnow(),
         )
-        
+
         # Mock IntegrityError for duplicate email - orig needs to stringify to contain "email"
         orig_mock = Mock()
         orig_mock.__str__ = Mock(return_value="UNIQUE constraint failed: users.email")
@@ -119,7 +119,7 @@ class TestUserRepositorySaveInsert:
         # Act & Assert
         with pytest.raises(ValueError, match="Email 'existing@example.com' already registered"):
             repo.save(user)
-        
+
         db.rollback.assert_called_once()
 
 
@@ -132,7 +132,7 @@ class TestUserRepositorySaveUpdate:
         db = Mock(spec=Session)
         repo = UserRepository(db)
         user_id = uuid4()
-        
+
         user = UserEntity(
             id=user_id,
             username="john_doe",
@@ -141,7 +141,7 @@ class TestUserRepositorySaveUpdate:
             is_active=True,
             created_at=datetime.datetime(2025, 1, 1, 12, 0, 0),
         )
-        
+
         # Mock existing user model in database
         existing_model = Mock(spec=UserModel)
         existing_model.id = user_id
@@ -151,7 +151,7 @@ class TestUserRepositorySaveUpdate:
         existing_model.is_active = True
         existing_model.created_at = datetime.datetime(2025, 1, 1, 12, 0, 0)
         existing_model.updated_at = None
-        
+
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = existing_model
         db.query.return_value = query_mock
@@ -171,7 +171,7 @@ class TestUserRepositorySaveUpdate:
         db = Mock(spec=Session)
         repo = UserRepository(db)
         user_id = uuid4()
-        
+
         user = UserEntity(
             id=user_id,
             username="john_doe",
@@ -180,7 +180,7 @@ class TestUserRepositorySaveUpdate:
             is_active=True,
             created_at=datetime.datetime(2025, 1, 1, 12, 0, 0),
         )
-        
+
         # Mock user not found
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = None
@@ -197,7 +197,7 @@ class TestUserRepositorySaveUpdate:
         repo = UserRepository(db)
         user_id = uuid4()
         updated_at = datetime.datetime(2025, 10, 20, 15, 30, 0)
-        
+
         user = UserEntity(
             id=user_id,
             username="john_doe",
@@ -207,7 +207,7 @@ class TestUserRepositorySaveUpdate:
             created_at=datetime.datetime(2025, 1, 1, 12, 0, 0),
             updated_at=updated_at,
         )
-        
+
         # Mock existing user
         existing_model = Mock(spec=UserModel)
         existing_model.id = user_id
@@ -217,7 +217,7 @@ class TestUserRepositorySaveUpdate:
         existing_model.is_active = user.is_active
         existing_model.created_at = user.created_at
         existing_model.updated_at = None
-        
+
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = existing_model
         db.query.return_value = query_mock
@@ -238,7 +238,7 @@ class TestUserRepositoryDomainEvents:
         db = Mock(spec=Session)
         repo = UserRepository(db)
         user_id = uuid4()
-        
+
         # Create user with event
         user = UserEntity(
             id=user_id,
@@ -248,7 +248,7 @@ class TestUserRepositoryDomainEvents:
             is_active=True,
             created_at=datetime.datetime(2025, 1, 1, 12, 0, 0),
         )
-        
+
         # Add domain event
         user._raise_event(
             UserRegisteredPayload(
@@ -259,9 +259,9 @@ class TestUserRepositoryDomainEvents:
             ),
             event_type="user.registered",
         )
-        
+
         assert user.has_events()
-        
+
         # Mock existing user
         existing_model = Mock(spec=UserModel)
         existing_model.id = user_id
@@ -271,11 +271,11 @@ class TestUserRepositoryDomainEvents:
         existing_model.is_active = user.is_active
         existing_model.created_at = user.created_at
         existing_model.updated_at = None
-        
+
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = existing_model
         db.query.return_value = query_mock
-        
+
         # Track what's added (should include outbox events)
         db.add.side_effect = lambda item: None
 
@@ -292,7 +292,7 @@ class TestUserRepositoryDomainEvents:
         db = Mock(spec=Session)
         repo = UserRepository(db)
         user_id = uuid4()
-        
+
         user = UserEntity(
             id=user_id,
             username="john_doe",
@@ -301,7 +301,7 @@ class TestUserRepositoryDomainEvents:
             is_active=True,
             created_at=datetime.datetime(2025, 1, 1, 12, 0, 0),
         )
-        
+
         # Add event
         user._raise_event(
             UserRegisteredPayload(
@@ -312,9 +312,9 @@ class TestUserRepositoryDomainEvents:
             ),
             event_type="user.registered",
         )
-        
+
         assert user.has_events()
-        
+
         # Mock existing user
         existing_model = Mock(spec=UserModel)
         existing_model.id = user_id
@@ -324,7 +324,7 @@ class TestUserRepositoryDomainEvents:
         existing_model.is_active = user.is_active
         existing_model.created_at = user.created_at
         existing_model.updated_at = None
-        
+
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = existing_model
         db.query.return_value = query_mock
@@ -345,7 +345,7 @@ class TestUserRepositoryRetrieval:
         db = Mock(spec=Session)
         repo = UserRepository(db)
         user_id = uuid4()
-        
+
         # Mock database model
         user_model = Mock(spec=UserModel)
         user_model.id = user_id
@@ -355,7 +355,7 @@ class TestUserRepositoryRetrieval:
         user_model.is_active = True
         user_model.created_at = datetime.datetime(2025, 1, 1, 12, 0, 0)
         user_model.updated_at = None
-        
+
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = user_model
         db.query.return_value = query_mock
@@ -374,7 +374,7 @@ class TestUserRepositoryRetrieval:
         db = Mock(spec=Session)
         repo = UserRepository(db)
         user_id = uuid4()
-        
+
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = None
         db.query.return_value = query_mock
@@ -390,7 +390,7 @@ class TestUserRepositoryRetrieval:
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
-        
+
         user_model = Mock(spec=UserModel)
         user_model.id = uuid4()
         user_model.username = "john_doe"
@@ -399,7 +399,7 @@ class TestUserRepositoryRetrieval:
         user_model.is_active = True
         user_model.created_at = datetime.datetime(2025, 1, 1, 12, 0, 0)
         user_model.updated_at = None
-        
+
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = user_model
         db.query.return_value = query_mock
@@ -416,7 +416,7 @@ class TestUserRepositoryRetrieval:
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
-        
+
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = None
         db.query.return_value = query_mock
@@ -432,7 +432,7 @@ class TestUserRepositoryRetrieval:
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
-        
+
         user_model = Mock(spec=Session)
         user_model.id = uuid4()
         user_model.username = "john_doe"
@@ -441,7 +441,7 @@ class TestUserRepositoryRetrieval:
         user_model.is_active = True
         user_model.created_at = datetime.datetime(2025, 1, 1, 12, 0, 0)
         user_model.updated_at = None
-        
+
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = user_model
         db.query.return_value = query_mock
@@ -458,7 +458,7 @@ class TestUserRepositoryRetrieval:
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
-        
+
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = None
         db.query.return_value = query_mock
@@ -478,7 +478,7 @@ class TestUserRepositoryExistence:
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
-        
+
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = Mock()
         db.query.return_value = query_mock
@@ -494,7 +494,7 @@ class TestUserRepositoryExistence:
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
-        
+
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = None
         db.query.return_value = query_mock
@@ -510,7 +510,7 @@ class TestUserRepositoryExistence:
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
-        
+
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = Mock()
         db.query.return_value = query_mock
@@ -526,7 +526,7 @@ class TestUserRepositoryExistence:
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
-        
+
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = None
         db.query.return_value = query_mock
@@ -549,7 +549,7 @@ class TestUserRepositoryMapping:
         user_id = uuid4()
         created_at = datetime.datetime(2025, 1, 1, 12, 0, 0)
         updated_at = datetime.datetime(2025, 1, 15, 14, 30, 0)
-        
+
         user_model = Mock(spec=UserModel)
         user_model.id = user_id
         user_model.username = "john_doe"
@@ -576,7 +576,7 @@ class TestUserRepositoryMapping:
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
-        
+
         user_model = Mock(spec=UserModel)
         user_model.id = uuid4()
         user_model.username = "inactive_user"
@@ -602,7 +602,7 @@ class TestUserRepositoryTransactions:
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
-        
+
         user = UserEntity(
             id=None,
             username="john_doe",
@@ -611,7 +611,7 @@ class TestUserRepositoryTransactions:
             is_active=True,
             created_at=datetime.datetime.utcnow(),
         )
-        
+
         # Mock IntegrityError
         integrity_error = IntegrityError("", "", orig=Mock(args=["constraint"]))
         db.flush.side_effect = integrity_error
@@ -619,7 +619,7 @@ class TestUserRepositoryTransactions:
         # Act & Assert
         with pytest.raises(ValueError):
             repo.save(user)
-        
+
         db.rollback.assert_called_once()
 
     def test_save_does_not_commit_transaction(self):
@@ -627,7 +627,7 @@ class TestUserRepositoryTransactions:
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
-        
+
         user = UserEntity(
             id=None,
             username="john_doe",
@@ -636,9 +636,9 @@ class TestUserRepositoryTransactions:
             is_active=True,
             created_at=datetime.datetime.utcnow(),
         )
-        
+
         # Mock add to simulate success
-        db.add.side_effect = lambda model: setattr(model, 'id', uuid4())
+        db.add.side_effect = lambda model: setattr(model, "id", uuid4())
 
         # Act
         repo.save(user)
