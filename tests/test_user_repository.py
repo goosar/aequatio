@@ -165,13 +165,13 @@ class TestUserRepositorySaveUpdate:
         assert existing_model.username == user.username
         assert existing_model.email == user.email
 
-    def test_save_raises_error_when_updating_nonexistent_user(self):
-        """Test error when updating user that doesn't exist."""
+    def test_save_creates_user_when_not_found_in_database(self):
+        """Test that user with UUID is created if not found in database."""
         # Arrange
         db = Mock(spec=Session)
         repo = UserRepository(db)
         user_id = uuid4()
-
+        
         user = UserEntity(
             id=user_id,
             username="john_doe",
@@ -180,15 +180,17 @@ class TestUserRepositorySaveUpdate:
             is_active=True,
             created_at=datetime.datetime(2025, 1, 1, 12, 0, 0),
         )
-
-        # Mock user not found
+        
+        # Mock user not found in database
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = None
         db.query.return_value = query_mock
 
-        # Act & Assert
-        with pytest.raises(ValueError, match=f"User with id {user_id} not found"):
-            repo.save(user)
+        # Act
+        repo.save(user)
+
+        # Assert - should create new user (not error)
+        db.add.assert_called_once()
 
     def test_save_updates_timestamp(self):
         """Test that updated_at is preserved when updating."""

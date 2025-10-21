@@ -61,20 +61,23 @@ class UserRepository:
         """
         try:
             # Map domain entity → persistence model
+            # Check if user exists in database (not just if ID is set, since domain generates UUIDs)
+            existing_user = None
             if user.id:
-                # Update existing
-                user_model = self.db.query(UserModel).filter(UserModel.id == user.id).first()
-                if not user_model:
-                    raise ValueError(f"User with id {user.id} not found")
+                existing_user = self.db.query(UserModel).filter(UserModel.id == user.id).first()
 
-                user_model.username = user.username
-                user_model.email = user.email
-                user_model.hashed_password = user.hashed_password
-                user_model.is_active = user.is_active
-                user_model.updated_at = user.updated_at
+            if existing_user:
+                # Update existing
+                existing_user.username = user.username
+                existing_user.email = user.email
+                existing_user.hashed_password = user.hashed_password
+                existing_user.is_active = user.is_active
+                existing_user.updated_at = user.updated_at
+                user_model = existing_user
             else:
-                # Create new
+                # Create new (UUID already assigned by domain)
                 user_model = UserModel(
+                    id=user.id,  # Use domain-generated UUID
                     username=user.username,
                     email=user.email,
                     hashed_password=user.hashed_password,
@@ -85,10 +88,6 @@ class UserRepository:
 
             # Flush to get ID (but don't commit yet)
             self.db.flush()
-
-            # Update entity with database ID
-            if not user.id:
-                user.update_event_user_id(user_model.id)
 
             # Publish domain events to outbox (transactional)
             for event in user.get_events():
