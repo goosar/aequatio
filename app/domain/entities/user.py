@@ -7,10 +7,10 @@ events when state changes occur.
 """
 
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, PrivateAttr
 
 from app.core.security import hash_password, validate_password_strength
 from app.domain.events.schema import Event, UserRegisteredPayload, make_event
@@ -62,8 +62,13 @@ class User(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
 
-    # Event sourcing
-    domain_events: List[Event] = Field(default_factory=list, exclude=True)
+    # Event sourcing (using PrivateAttr for better type inference)
+    _domain_events: list[Event] = PrivateAttr(default_factory=list)
+    
+    @property
+    def domain_events(self) -> list[Event]:
+        """Get the domain events list."""
+        return self._domain_events
 
     model_config = {
         "arbitrary_types_allowed": True,
@@ -235,7 +240,7 @@ class User(BaseModel):
             event_type: Event type identifier.
         """
         event = make_event(payload, event_type)  # type: ignore[arg-type]
-        self.domain_events.append(event)
+        self._domain_events.append(event)
 
     def update_event_user_id(self, user_id: UUID) -> None:
         """Update user_id in pending events after database insert.
@@ -246,7 +251,7 @@ class User(BaseModel):
             user_id: Database-generated user ID (UUID).
         """
         self.id = user_id
-        for event in self.domain_events:
+        for event in self._domain_events:
             if hasattr(event.payload, "user_id"):
                 # Update payload immutably
                 updated_payload = event.payload.model_copy(update={"user_id": user_id})
@@ -259,15 +264,15 @@ class User(BaseModel):
         Returns:
             True if events exist, False otherwise.
         """
-        return len(self.domain_events) > 0
+        return len(self._domain_events) > 0
 
-    def get_events(self) -> List[Event]:
+    def get_events(self) -> list[Event]:
         """Get all uncommitted domain events.
 
         Returns:
             List of domain events.
         """
-        return self.domain_events.copy()
+        return self._domain_events.copy()
 
     def clear_events(self) -> None:
         """Clear all domain events (called after persisting to outbox).
@@ -277,7 +282,7 @@ class User(BaseModel):
             >>> repository.save(user)  # Persists events to outbox
             >>> user.clear_events()    # Clear after commit
         """
-        self.domain_events.clear()
+        self._domain_events.clear()
 
     # =========================================================================
     # QUERY METHODS (No State Mutation)
