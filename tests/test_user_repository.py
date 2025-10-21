@@ -171,7 +171,7 @@ class TestUserRepositorySaveUpdate:
         db = Mock(spec=Session)
         repo = UserRepository(db)
         user_id = uuid4()
-        
+
         user = UserEntity(
             id=user_id,
             username="john_doe",
@@ -180,7 +180,7 @@ class TestUserRepositorySaveUpdate:
             is_active=True,
             created_at=datetime.datetime(2025, 1, 1, 12, 0, 0),
         )
-        
+
         # Mock user not found in database
         query_mock = Mock()
         query_mock.filter.return_value.first.return_value = None

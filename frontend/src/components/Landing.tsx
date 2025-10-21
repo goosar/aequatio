@@ -5,7 +5,7 @@ export default function Landing(){
     <section className="min-h-[60vh] flex items-center">
       <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
         <div>
-          <h2 className="text-5xl font-extrabold mb-4">Welcome to Equation</h2>
+          <h2 className="text-5xl font-extrabold mb-4">Welcome to Aequatio</h2>
           <p className="text-gray-700 mb-6 text-lg">Split expenses, track groups and settle up easily. Beautiful, minimal, and private-first.</p>
           <div className="flex items-center gap-4">
             <AuthButtons />

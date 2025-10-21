@@ -6,14 +6,18 @@ to hide database/infrastructure concerns from the API layer.
 Compare with the current routers.py to see the difference in approach.
 """
 
+from datetime import timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
+from app.api.v1.schemas.auth import LoginRequest, TokenResponse
 from app.api.v1.schemas.user import UserRegisterRequest, UserResponse
 from app.application.services.user_service import UserApplicationService
+from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from app.core.database import get_db
+from app.core.security import create_access_token
 
 router = APIRouter()
 
@@ -102,6 +106,65 @@ async def register_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Registration failed: {str(e)}",
         ) from e
+
+
+@router.post(
+    "/auth/login",
+    response_model=TokenResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Login with email and password",
+    tags=["Authentication"],
+)
+async def login(
+    login_data: LoginRequest,
+    user_service: UserApplicationService = Depends(get_user_service),
+):
+    """Authenticate user and return JWT access token.
+
+    Args:
+        login_data: Login credentials (email and password).
+        user_service: Injected application service.
+
+    Returns:
+        TokenResponse with JWT access token.
+
+    Raises:
+        HTTPException: 401 if credentials are invalid or user is inactive.
+
+    Example:
+        POST /api/v1/auth/login
+        {
+            "email": "john@example.com",
+            "password": "SecurePass123!"
+        }
+
+        Response:
+        {
+            "access_token": "eyJhbGc...",
+            "token_type": "bearer"
+        }
+    """
+    # Authenticate user
+    user = user_service.authenticate_user(
+        email=login_data.email,
+        password=login_data.password,
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Create JWT token
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": str(user.id)},
+        expires_delta=access_token_expires,
+    )
+
+    return TokenResponse(access_token=access_token, token_type="bearer")
 
 
 @router.get("/users/{user_id}", response_model=UserResponse, tags=["Users"])

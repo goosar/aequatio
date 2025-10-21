@@ -68,11 +68,11 @@ class UserRepository:
 
             if existing_user:
                 # Update existing
-                existing_user.username = user.username
-                existing_user.email = user.email
-                existing_user.hashed_password = user.hashed_password
-                existing_user.is_active = user.is_active
-                existing_user.updated_at = user.updated_at
+                existing_user.username = user.username  # type: ignore[assignment]
+                existing_user.email = user.email  # type: ignore[assignment]
+                existing_user.hashed_password = user.hashed_password  # type: ignore[assignment]
+                existing_user.is_active = user.is_active  # type: ignore[assignment]
+                existing_user.updated_at = user.updated_at  # type: ignore[assignment]
                 user_model = existing_user
             else:
                 # Create new (UUID already assigned by domain)
@@ -187,11 +187,11 @@ class UserRepository:
             User domain entity.
         """
         return UserEntity(
-            id=model.id,
-            username=model.username,
-            email=model.email,
-            hashed_password=model.hashed_password,
-            is_active=model.is_active,
-            created_at=model.created_at,
-            updated_at=model.updated_at,
+            id=model.id,  # type: ignore[arg-type]
+            username=model.username,  # type: ignore[arg-type]
+            email=model.email,  # type: ignore[arg-type]
+            hashed_password=model.hashed_password,  # type: ignore[arg-type]
+            is_active=model.is_active,  # type: ignore[arg-type]
+            created_at=model.created_at,  # type: ignore[arg-type]
+            updated_at=model.updated_at,  # type: ignore[arg-type]
         )

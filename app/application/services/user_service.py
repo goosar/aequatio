@@ -14,6 +14,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from app.core.security import verify_password
 from app.domain.entities.user import User
 from app.persistence.repositories.user_repository import UserRepository
 
@@ -114,6 +115,39 @@ class UserApplicationService:
             User entity if found, None otherwise.
         """
         return self.user_repo.get_by_username(username)
+
+    def authenticate_user(self, email: str, password: str) -> Optional[User]:
+        """Authenticate user with email and password.
+
+        Args:
+            email: User's email address.
+            password: Plaintext password to verify.
+
+        Returns:
+            User entity if authentication successful, None otherwise.
+
+        Example:
+            >>> service = UserApplicationService(db)
+            >>> user = service.authenticate_user("john@example.com", "SecurePass123!")
+            >>> if user:
+            ...     print(f"Authenticated: {user.username}")
+            ... else:
+            ...     print("Invalid credentials")
+        """
+        # Get user by email
+        user = self.user_repo.get_by_email(email)
+        if not user:
+            return None
+
+        # Verify password
+        if not verify_password(password, user.hashed_password):
+            return None
+
+        # Check if user is active
+        if not user.is_active:
+            return None
+
+        return user
 
     def deactivate_user(self, user_id: UUID) -> User:
         """Deactivate a user account (use case).

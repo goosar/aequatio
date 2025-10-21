@@ -1,13 +1,25 @@
 """Security utilities for authentication and password management.
 
 This module provides secure password hashing and verification using bcrypt,
-along with other security-related functionality.
+along with JWT token creation and validation for API authentication.
 """
 
+from datetime import datetime, timedelta, timezone
+from typing import Optional
+from uuid import UUID
+
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
 from passlib.context import CryptContext
+
+from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
 
 # bcrypt configuration with recommended cost factor
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# HTTP Bearer token scheme for FastAPI
+security_scheme = HTTPBearer()
 
 
 def hash_password(password: str) -> str:
@@ -87,3 +99,106 @@ def validate_password_strength(password: str) -> tuple[bool, str]:
         return False, f"Password must contain at least one special character ({special_chars})"
 
     return True, ""
+
+
+# =========================================================================
+# JWT Token Management
+# =========================================================================
+
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """Create a JWT access token.
+
+    Args:
+        data: Dictionary of claims to encode in the token (e.g., {"sub": user_id}).
+        expires_delta: Optional custom expiration time. Defaults to ACCESS_TOKEN_EXPIRE_MINUTES.
+
+    Returns:
+        Encoded JWT token string.
+
+    Example:
+        >>> token = create_access_token({"sub": "user@example.com"})
+        >>> isinstance(token, str)
+        True
+    """
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+def verify_token(token: str) -> Optional[dict]:
+    """Verify and decode a JWT token.
+
+    Args:
+        token: JWT token string to verify.
+
+    Returns:
+        Decoded token payload if valid, None otherwise.
+
+    Example:
+        >>> token = create_access_token({"sub": "user@example.com"})
+        >>> payload = verify_token(token)
+        >>> payload is not None
+        True
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        return None
+
+
+def get_current_user_id(
+    credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
+) -> UUID:
+    """Extract and validate user ID from JWT token.
+
+    This dependency can be used in FastAPI endpoints to require authentication.
+
+    Args:
+        credentials: HTTP Bearer credentials from request header.
+
+    Returns:
+        User UUID from token.
+
+    Raises:
+        HTTPException: If token is invalid or missing.
+
+    Example:
+        >>> @router.get("/protected")
+        >>> def protected_route(user_id: UUID = Depends(get_current_user_id)):
+        ...     return {"user_id": user_id}
+    """
+    token = credentials.credentials
+    payload = verify_token(token)
+
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    user_id_str: Optional[str] = payload.get("sub")
+    if user_id_str is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    try:
+        user_id = UUID(user_id_str)
+        return user_id
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid user ID in token",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
