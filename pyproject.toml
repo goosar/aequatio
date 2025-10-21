@@ -17,6 +17,7 @@ dependencies = [
     "python-jose[cryptography]>=3.3.0",
     "sqlalchemy>=2.0.43",
     "types-passlib>=1.7.7.20250602",
+    "types-python-jose>=3.5.0.20250531",
     "uvicorn[standard]>=0.37.0",
 ]
 
