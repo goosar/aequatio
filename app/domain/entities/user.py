@@ -64,7 +64,7 @@ class User(BaseModel):
 
     # Event sourcing (using PrivateAttr for better type inference)
     _domain_events: list[Event] = PrivateAttr(default_factory=list)
-    
+
     @property
     def domain_events(self) -> list[Event]:
         """Get the domain events list."""

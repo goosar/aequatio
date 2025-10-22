@@ -10,7 +10,7 @@ LOCAL_DB_URL ?= postgresql+psycopg2://postgres:postgres@localhost:5432/aequatio
 # default compose network (project_default). Override if your project name differs.
 NETWORK ?= aequatio_default
 
-.PHONY: help up down build restart ps logs exec-app psql migrate migrate-run alembic-revision db-only migrate-local run-local run-frontend local
+.PHONY: help up down build restart ps logs exec-app psql migrate migrate-run alembic-revision db-only migrate-local run-local run-frontend local coverage coverage-html
 
 help:
 	@echo "Available targets:"
@@ -34,8 +34,10 @@ help:
 	@echo "  lint             Run linter (ruff)"
 	@echo "  lint-fix         Run linter and auto-fix issues (ruff --fix)"
 	@echo "  format           Format code (black)"
-	@echo "  typecheck       Run type checker (mypy)"
+	@echo "  typecheck        Run type checker (mypy)"
 	@echo "  test             Run tests (pytest)"
+	@echo "  coverage         Run tests with coverage and show report"
+	@echo "  coverage-html    Run tests with coverage and generate HTML report"
 
 up:
 	$(COMPOSE) up -d --build
@@ -130,6 +132,15 @@ format:
 
 test:
 	uv run pytest -q
+
+coverage:
+	uv run coverage run -m pytest
+	uv run coverage report
+
+coverage-html:
+	uv run coverage run -m pytest
+	uv run coverage html
+	@echo "Coverage report generated in htmlcov/index.html"
 
 typecheck:
 	uv tool run mypy .
