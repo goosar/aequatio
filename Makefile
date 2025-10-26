@@ -118,8 +118,16 @@ migrate-run:
 	$(COMPOSE) run --rm $(APP) uv run alembic upgrade head
 
 alembic-revision:
-	@test -n "$(M)" || (echo "Missing message: make alembic-revision M=\"your message\"" && exit 1)
+ifndef M
+	$(error Missing message: make alembic-revision M="your message")
+endif
 	$(COMPOSE) exec $(APP) uv run alembic revision --autogenerate -m "$(M)"
+
+alembic-revision-local:
+ifndef M
+	$(error Missing message: make alembic-revision-local M="your message")
+endif
+	@powershell -Command "$$env:DATABASE_URL='$(LOCAL_DB_URL)'; uv run alembic revision --autogenerate -m '$(M)'"
 
 lint:
 	uv tool run ruff check .

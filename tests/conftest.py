@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.database import Base
+from app.persistence.models.expense import SQLAlchemyExpense  # noqa: F401
 from app.persistence.models.outbox import OutboxEvent  # noqa: F401
 from app.persistence.models.user import User as UserModel  # noqa: F401
 

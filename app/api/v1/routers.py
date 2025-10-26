@@ -13,11 +13,13 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.auth import LoginRequest, TokenResponse
+from app.api.v1.schemas.expense import ExpenseCreateRequest, ExpenseResponse
 from app.api.v1.schemas.user import UserRegisterRequest, UserResponse
+from app.application.services.expense_service import ExpenseApplicationService
 from app.application.services.user_service import UserApplicationService
 from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from app.core.database import get_db
-from app.core.security import create_access_token
+from app.core.security import create_access_token, get_current_user_id
 
 router = APIRouter()
 
@@ -47,6 +49,36 @@ def get_user_service(db: Session = Depends(get_db)) -> UserApplicationService:
     The API only knows about the service, not the database.
     """
     return UserApplicationService(db)
+
+
+def get_expense_service(db: Session = Depends(get_db)):
+    """Dependency injection for ExpenseApplicationService.
+
+    This hides the database session from the API layer.
+    The API only knows about the service, not the database.
+    """
+
+    return ExpenseApplicationService(db)
+
+
+@router.post(
+    "/expense",
+    response_model=ExpenseResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new expense",
+    tags=["Expenses"],
+)
+async def create_expense(
+    expense_data: ExpenseCreateRequest,
+    expense_service: ExpenseApplicationService = Depends(get_expense_service),
+    user_id: UUID = Depends(get_current_user_id),
+) -> ExpenseResponse:
+    """Create a new expense for the authenticated user.
+
+    The user ID is automatically extracted from the JWT token.
+    """
+    expense = expense_service.create_expense(expense_data, user_id)
+    return ExpenseResponse.model_validate(expense)
 
 
 @router.post(

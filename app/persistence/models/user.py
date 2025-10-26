@@ -9,6 +9,7 @@ from uuid import uuid4
 
 from sqlalchemy import Boolean, Column, DateTime, String, text
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 from app.core.database import Base
 
@@ -48,6 +49,10 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
     updated_at = Column(DateTime(timezone=True), onupdate=text("CURRENT_TIMESTAMP"))
+
+    expenses = relationship(
+        "SQLAlchemyExpense", back_populates="user", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         """Return string representation of the User instance.
