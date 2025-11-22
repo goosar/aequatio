@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.auth import LoginRequest, TokenResponse
-from app.api.v1.schemas.expense import ExpenseCreateRequest, ExpenseResponse
+from app.api.v1.schemas.expense import ExpenseCreateCommand, ExpenseResponse
 from app.api.v1.schemas.user import UserRegisterRequest, UserResponse
 from app.application.services.expense_service import ExpenseApplicationService
 from app.application.services.user_service import UserApplicationService
@@ -69,7 +69,7 @@ def get_expense_service(db: Session = Depends(get_db)):
     tags=["Expenses"],
 )
 async def create_expense(
-    expense_data: ExpenseCreateRequest,
+    expense_data: ExpenseCreateCommand,
     expense_service: ExpenseApplicationService = Depends(get_expense_service),
     user_id: UUID = Depends(get_current_user_id),
 ) -> ExpenseResponse:

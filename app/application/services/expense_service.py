@@ -2,7 +2,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.api.v1.schemas.expense import ExpenseCreateRequest
+from app.api.v1.schemas.expense import ExpenseCreateCommand
 from app.domain.entities.expense import ExpenseEntity
 from app.persistence.repositories.expense_repository import SQLAlchemyExpenseRepository
 
@@ -16,7 +16,7 @@ class ExpenseApplicationService:
         self.db = db
         self.expense_repo = SQLAlchemyExpenseRepository(db)
 
-    def create_expense(self, expense_data: ExpenseCreateRequest, user_id: UUID) -> ExpenseEntity:
+    def create_expense(self, expense_data: ExpenseCreateCommand, user_id: UUID) -> ExpenseEntity:
         """
         Create a new expense for the authenticated user.
 
@@ -39,4 +39,5 @@ class ExpenseApplicationService:
         )
 
         saved_expense = self.expense_repo.save(expense)
+        self.db.commit()
         return saved_expense

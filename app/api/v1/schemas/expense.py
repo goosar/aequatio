@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 from app.domain.entities.expense import ExpenseCategory
 
 
-class ExpenseCreateRequest(BaseModel):
+class ExpenseCreateCommand(BaseModel):
     """Request schema for creating a new expense.
 
     Attributes:
@@ -105,7 +105,7 @@ class ExpenseResponse(BaseModel):
     expensedate: datetime
     vendor: str | None
     created_at: datetime
-    updated_at: datetime
+    updated_at: datetime | None
 
     class Config:
         from_attributes = True  # Enables ORM mode for SQLAlchemy models

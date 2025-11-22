@@ -6,7 +6,7 @@ This module tests the ExpenseApplicationService for expense creation business lo
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from app.api.v1.schemas.expense import ExpenseCreateRequest
+from app.api.v1.schemas.expense import ExpenseCreateCommand
 from app.application.services.expense_service import ExpenseApplicationService
 from app.domain.entities.expense import ExpenseCategory, ExpenseEntity
 from app.persistence.models.expense import SQLAlchemyExpense
@@ -30,7 +30,7 @@ class TestExpenseApplicationServiceCreate:
         db.flush()
 
         # Create request data
-        request_data = ExpenseCreateRequest(
+        request_data = ExpenseCreateCommand(
             title="Office Supplies",
             amount=150.75,
             currency="USD",
@@ -76,7 +76,7 @@ class TestExpenseApplicationServiceCreate:
         db.flush()
 
         # Create request without optional fields
-        request_data = ExpenseCreateRequest(
+        request_data = ExpenseCreateCommand(
             title="Groceries",
             amount=50.0,
             currency="EUR",
@@ -118,7 +118,7 @@ class TestExpenseApplicationServiceCreate:
         # Create multiple expenses
         expenses = []
         for i in range(3):
-            request_data = ExpenseCreateRequest(
+            request_data = ExpenseCreateCommand(
                 title=f"Expense {i + 1}",
                 amount=100.0 * (i + 1),
                 currency="USD",
@@ -159,7 +159,7 @@ class TestExpenseApplicationServiceCreate:
         ]
 
         for category in categories:
-            request_data = ExpenseCreateRequest(
+            request_data = ExpenseCreateCommand(
                 title=f"Test {category.value}",
                 amount=100.0,
                 currency="EUR",
@@ -192,7 +192,7 @@ class TestExpenseApplicationServiceCreate:
         currencies = ["USD", "EUR", "GBP", "JPY"]
 
         for currency in currencies:
-            request_data = ExpenseCreateRequest(
+            request_data = ExpenseCreateCommand(
                 title=f"Expense in {currency}",
                 amount=100.0,
                 currency=currency,
@@ -222,7 +222,7 @@ class TestExpenseApplicationServiceCreate:
         long_description = "B" * 500  # Maximum length
         long_vendor = "C" * 100  # Maximum length
 
-        request_data = ExpenseCreateRequest(
+        request_data = ExpenseCreateCommand(
             fk_user_id=user.id,
             title=long_title,
             amount=999.99,
@@ -257,7 +257,7 @@ class TestExpenseApplicationServiceCreate:
         db.add(user)
         db.flush()
 
-        request_data = ExpenseCreateRequest(
+        request_data = ExpenseCreateCommand(
             fk_user_id=user.id,
             title="Café & Restaurant: €50",
             amount=50.0,
@@ -291,7 +291,7 @@ class TestExpenseApplicationServiceCreate:
         db.add(user)
         db.flush()
 
-        request_data = ExpenseCreateRequest(
+        request_data = ExpenseCreateCommand(
             fk_user_id=user.id,
             title="Minimal Expense",
             amount=0.01,  # Smallest positive amount
@@ -320,7 +320,7 @@ class TestExpenseApplicationServiceCreate:
         db.add(user)
         db.flush()
 
-        request_data = ExpenseCreateRequest(
+        request_data = ExpenseCreateCommand(
             fk_user_id=user.id,
             title="Large Purchase",
             amount=999999.99,
@@ -350,7 +350,7 @@ class TestExpenseApplicationServiceCreate:
         db.flush()
 
         past_date = datetime(2020, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
-        request_data = ExpenseCreateRequest(
+        request_data = ExpenseCreateCommand(
             fk_user_id=user.id,
             title="Past Expense",
             amount=100.0,
@@ -384,7 +384,7 @@ class TestExpenseApplicationServiceCreate:
 
         # Create multiple expenses
         for i in range(5):
-            request_data = ExpenseCreateRequest(
+            request_data = ExpenseCreateCommand(
                 fk_user_id=user.id,
                 title=f"Expense {i}",
                 amount=100.0,
@@ -413,7 +413,7 @@ class TestExpenseApplicationServiceCreate:
         db.add(user)
         db.flush()
 
-        request_data = ExpenseCreateRequest(
+        request_data = ExpenseCreateCommand(
             fk_user_id=user.id,
             title="Timestamped Expense",
             amount=100.0,
