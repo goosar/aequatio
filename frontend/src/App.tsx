@@ -4,8 +4,9 @@ import RegisterForm from './components/RegisterForm'
 import LoginForm from './components/LoginForm'
 import ExpenseForm from './components/ExpenseForm'
 import ExpensesList from './components/ExpensesList'
+import type { User } from './types'
 
-type User = { id: string; username: string; email: string }
+type RegistrationUser = Pick<User, 'id' | 'username' | 'email'>
 type Expense = { 
   id: string
   title: string
@@ -33,7 +34,7 @@ function App() {
     fetchExpenses(authToken)
   }
 
-  function handleRegisterSuccess(userData: User) {
+  function handleRegisterSuccess(userData: RegistrationUser) {
     console.log('User registered:', userData)
     setShowRegister(false)
     setShowLogin(true)
