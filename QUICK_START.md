@@ -194,7 +194,8 @@ The API does not expose arbitrary user-profile lookup routes.
 
 **Solution:**
 - Check backend is running: http://localhost:8000/api/v1/
-- CORS is configured for localhost:5173 in `main.py`
+- Configure allowed origins with the comma-separated `CORS_ORIGINS` setting in
+  `.env`; its development default includes `http://localhost:5173`.
 
 ### Database connection error
 **Problem:** "could not translate host name 'db'"
