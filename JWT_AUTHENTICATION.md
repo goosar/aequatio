@@ -11,9 +11,11 @@ Successfully implemented JWT-based authentication for the Aequatio API, allowing
 
 ### 2. Configuration
 **File**: `app/core/config.py`
-- Added `SECRET_KEY`: JWT signing secret (from env, default for dev)
+- `SECRET_KEY`: required JWT signing secret with at least 32 characters; the
+  insecure placeholder is rejected
 - Added `ALGORITHM`: HS256 for JWT signing
 - Added `ACCESS_TOKEN_EXPIRE_MINUTES`: Token expiration time (default: 30 minutes)
+- `CORS_ORIGINS`: comma-separated list of allowed frontend origins
 
 ### 3. Security Module
 **File**: `app/core/security.py`
@@ -24,7 +26,8 @@ Successfully implemented JWT-based authentication for the Aequatio API, allowing
 ### 4. Authentication Schemas
 **File**: `app/api/v1/schemas/auth.py` (NEW)
 - `LoginRequest`: Email (EmailStr) and password input
-- `TokenResponse`: JWT access_token and token_type output
+- `TokenResponse`: JWT access token, token type, and authenticated user's
+  public profile
 
 ### 5. Application Service
 **File**: `app/application/services/user_service.py`
@@ -38,9 +41,10 @@ Successfully implemented JWT-based authentication for the Aequatio API, allowing
 **File**: `app/api/v1/routers.py`
 - `POST /api/v1/auth/login`: Login endpoint
   - Accepts: `LoginRequest` (email, password)
-  - Returns: `TokenResponse` (access_token, token_type: "bearer")
+  - Returns: `TokenResponse` (access_token, token_type: "bearer", user)
   - Status: 200 OK on success, 401 Unauthorized on failure
   - Headers: WWW-Authenticate: Bearer on 401
+- `GET /api/v1/users/me`: authenticated current-user profile endpoint
 
 ### 7. Test Suite
 **Files**: 
@@ -70,7 +74,14 @@ Content-Type: application/json
 # Response (200 OK)
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer"
+  "token_type": "bearer",
+  "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "username": "john_doe",
+    "email": "user@example.com",
+    "is_active": true,
+    "created_at": "2025-10-18T10:30:00Z"
+  }
 }
 
 # Error Response (401 Unauthorized)
@@ -81,15 +92,28 @@ Content-Type: application/json
 
 ### Using the Token
 ```bash
-GET /api/v1/protected-endpoint
+GET /api/v1/users/me
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
+This endpoint returns only the authenticated user's public profile. The API
+does not provide arbitrary user-profile lookup routes.
+
 ## Environment Variables
-Add to `.env`:
+Create `.env` from the tracked template, then set a unique secret:
+
+```powershell
+Copy-Item .env.example .env
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Add the generated value to `.env`; it must contain at least 32 characters and
+must never be committed. Configure allowed origins as a comma-separated list:
+
 ```env
-SECRET_KEY=your-secret-key-for-production-change-this
+SECRET_KEY=<generated-random-secret-with-at-least-32-characters>
 ACCESS_TOKEN_EXPIRE_MINUTES=30
+CORS_ORIGINS=http://localhost:5173,https://app.example.com
 ```
 
 ## Next Steps
@@ -113,21 +137,11 @@ pytest tests/test_auth_endpoints.py -v
   ```
 - Add to `.env` and **never commit** this to version control
 
-### 4. Protected Endpoints (Future)
-To protect endpoints, use the `get_current_user_id` dependency:
+### 4. Current-user endpoint
 
-```python
-from app.core.security import get_current_user_id
-from uuid import UUID
-
-@router.get("/protected-resource")
-async def protected_route(
-    user_id: UUID = Depends(get_current_user_id)
-):
-    # user_id is automatically extracted from JWT token
-    # If token is invalid, FastAPI returns 401 automatically
-    return {"user_id": str(user_id), "message": "Access granted"}
-```
+Call `GET /api/v1/users/me` with `Authorization: Bearer <access_token>` to
+retrieve the identity represented by the token. This replaces arbitrary
+user-profile lookups.
 
 ## Architecture Benefits
 

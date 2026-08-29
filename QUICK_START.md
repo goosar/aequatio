@@ -7,6 +7,27 @@
 - Node.js and npm installed
 - Python with uv installed
 
+### Configure environment variables
+
+Create a local environment file from the repository template:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Generate a unique `SECRET_KEY` with at least 32 characters, then add it to
+`.env`. Do not commit this file.
+
+```powershell
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Set `CORS_ORIGINS` as a comma-separated list of origins (not a Python list):
+
+```env
+CORS_ORIGINS=http://localhost:5173,https://app.example.com
+```
+
 ---
 
 ## Option 1: One-Command Setup (Recommended)
@@ -123,6 +144,34 @@ Then in the PostgreSQL shell:
 ```sql
 SELECT id, username, email, is_active, created_at FROM users;
 ```
+
+### 5. Test authentication
+
+Log in with `POST /api/v1/auth/login`. A successful response includes the
+access token and authenticated user's public profile:
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "username": "test_user",
+    "email": "test@example.com",
+    "is_active": true,
+    "created_at": "2025-10-18T10:30:00Z"
+  }
+}
+```
+
+Use the returned token to request your own profile:
+
+```bash
+GET /api/v1/users/me
+Authorization: Bearer <access_token>
+```
+
+The API does not expose arbitrary user-profile lookup routes.
 
 ---
 

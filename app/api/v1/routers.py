@@ -161,7 +161,8 @@ async def login(
         user_service: Injected application service.
 
     Returns:
-        TokenResponse with JWT access token.
+        TokenResponse with JWT access token and authenticated user's public
+        profile.
 
     Raises:
         HTTPException: 401 if credentials are invalid or user is inactive.
@@ -176,7 +177,14 @@ async def login(
         Response:
         {
             "access_token": "eyJhbGc...",
-            "token_type": "bearer"
+            "token_type": "bearer",
+            "user": {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "username": "john_doe",
+                "email": "john@example.com",
+                "is_active": true,
+                "created_at": "2025-10-18T10:30:00Z"
+            }
         }
     """
     # Authenticate user

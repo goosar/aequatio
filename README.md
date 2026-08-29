@@ -1,6 +1,50 @@
 # aequatio
 A better Expense overview
 
+## Local configuration
+
+Create your local configuration from the tracked template before running the
+backend:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Set `SECRET_KEY` in `.env` to a unique random value with at least 32
+characters. For example:
+
+```powershell
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+`CORS_ORIGINS` is a comma-separated list of allowed frontend origins:
+
+```env
+CORS_ORIGINS=http://localhost:5173,https://app.example.com
+```
+
+Do not commit `.env` or its secret values.
+
+## API authentication
+
+`POST /api/v1/auth/login` returns a bearer token and the authenticated user's
+public profile. Use that token for `GET /api/v1/users/me` to retrieve the
+current user's profile; clients cannot look up arbitrary user profiles.
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "username": "john_doe",
+    "email": "john@example.com",
+    "is_active": true,
+    "created_at": "2025-10-18T10:30:00Z"
+  }
+}
+```
+
 ## Aequatio — Solution Design
 
 Summary
