@@ -48,12 +48,12 @@ Successfully implemented JWT-based authentication for the Aequatio API, allowing
 
 ### 7. Test Suite
 **Files**: 
-- `tests/test_auth_service.py` (NEW): 13 tests for authentication service
+- `tests/test_auth_service.py` (NEW): tests for authentication service
   - Valid/invalid credentials
   - Inactive users
   - Edge cases (SQL injection, special chars, Unicode)
   
-- `tests/test_auth_endpoints.py` (NEW): 23 tests for login endpoint
+- `tests/test_auth_endpoints.py` (NEW): tests for login endpoint
   - Valid/invalid login scenarios
   - Token validation and expiration
   - Integration tests (register + login)
@@ -162,9 +162,9 @@ user-profile lookups.
 - ✅ No password leakage in responses
 
 ## Test Coverage
-- **Service Layer**: 13 tests covering authentication logic
-- **API Layer**: 23 tests covering endpoint behavior, security, and integration
-- **Total**: 36 new tests for authentication
+- **Service Layer**: tests covering authentication logic
+- **API Layer**: tests covering endpoint behavior, security, and integration
+- **Authentication coverage**: service and endpoint tests
 
 ## Known Issues
 ⚠️ **File Lock Issue**: `uv sync` encountered permission errors during dependency installation. This typically happens when:

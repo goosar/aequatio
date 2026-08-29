@@ -2,7 +2,6 @@ import pytest
 
 from app.core.config import load_settings
 
-
 BASE_ENV = {
     "DATABASE_URL": "sqlite:///:memory:",
     "SECRET_KEY": "x" * 32,
@@ -45,3 +44,8 @@ def test_load_settings_defaults_to_local_vite_origin():
     settings = load_settings(BASE_ENV)
 
     assert settings.cors_origins == ("http://localhost:5173",)
+
+
+def test_load_settings_rejects_invalid_access_token_expiration_without_echoing_value():
+    with pytest.raises(ValueError, match="^ACCESS_TOKEN_EXPIRE_MINUTES must be an integer$"):
+        load_settings({**BASE_ENV, "ACCESS_TOKEN_EXPIRE_MINUTES": "not-a-number"})
