@@ -1,5 +1,10 @@
 """Shared pytest fixtures for all tests."""
 
+import os
+
+os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
+os.environ.setdefault("SECRET_KEY", "test-only-secret-key-at-least-32-characters")
+
 from typing import Generator
 
 import pytest

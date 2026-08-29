@@ -17,7 +17,7 @@ from app.api.v1.schemas.expense import ExpenseCreateCommand, ExpenseResponse
 from app.api.v1.schemas.user import UserRegisterRequest, UserResponse
 from app.application.services.expense_service import ExpenseApplicationService
 from app.application.services.user_service import UserApplicationService
-from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import create_access_token, get_current_user_id
 
@@ -190,7 +190,7 @@ async def login(
         )
 
     # Create JWT token
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = create_access_token(
         data={"sub": str(user.id)},
         expires_delta=access_token_expires,
