@@ -6,6 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.api.v1.routers import get_user_service
 from app.core.database import get_db
 from app.core.security import create_access_token
 from app.domain.entities.user import User
@@ -64,6 +65,27 @@ def bearer_headers(user: User) -> dict[str, str]:
     """Return bearer authentication headers for a user."""
     token = create_access_token({"sub": str(user.id)})
     return {"Authorization": f"Bearer {token}"}
+
+
+def test_registration_hides_unexpected_exception_details(client: TestClient, caplog):
+    class FailingUserService:
+        def register_user(self, **_kwargs):
+            raise RuntimeError("postgres password=do-not-leak")
+
+    app.dependency_overrides[get_user_service] = lambda: FailingUserService()
+    response = client.post(
+        "/api/v1/users/register",
+        json={
+            "username": "safeuser",
+            "email": "safe@example.com",
+            "password": "SecurePass123!",
+        },
+    )
+
+    assert response.status_code == 500
+    assert response.json() == {"detail": "Registration failed"}
+    assert "do-not-leak" not in response.text
+    assert "Unexpected registration failure" in caplog.text
 
 
 class TestLoginEndpoint:

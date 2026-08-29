@@ -7,6 +7,7 @@ Compare with the current routers.py to see the difference in approach.
 """
 
 from datetime import timedelta
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -22,6 +23,7 @@ from app.core.database import get_db
 from app.core.security import create_access_token, get_current_user_id
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.get(
@@ -133,11 +135,12 @@ async def register_user(
 
         raise HTTPException(status_code=status_code, detail=error_msg) from e
 
-    except Exception as e:
+    except Exception as exc:
+        logger.exception("Unexpected registration failure")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Registration failed: {str(e)}",
-        ) from e
+            detail="Registration failed",
+        ) from exc
 
 
 @router.post(
