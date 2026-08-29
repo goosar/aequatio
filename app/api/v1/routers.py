@@ -196,28 +196,25 @@ async def login(
         expires_delta=access_token_expires,
     )
 
-    return TokenResponse(access_token=access_token, token_type="bearer")
+    return TokenResponse(
+        access_token=access_token,
+        token_type="bearer",
+        user=UserResponse.model_validate(user),
+    )
 
 
-@router.get("/users/{user_id}", response_model=UserResponse, tags=["Users"])
-async def get_user(user_id: UUID, user_service: UserApplicationService = Depends(get_user_service)):
-    """Get user by ID.
-
-    Args:
-        user_id: User identifier (UUID).
-        user_service: Injected application service.
-
-    Returns:
-        User data.
-
-    Raises:
-        HTTPException: 404 if user not found.
-    """
+@router.get("/users/me", response_model=UserResponse, tags=["Users"])
+async def get_current_user(
+    user_id: UUID = Depends(get_current_user_id),
+    user_service: UserApplicationService = Depends(get_user_service),
+) -> UserResponse:
+    """Get the authenticated user's profile."""
     user = user_service.get_user_by_id(user_id)
-
-    if not user:
+    if user is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     return UserResponse.model_validate(user)

@@ -60,6 +60,12 @@ def registered_user(db: Session) -> User:
     return user
 
 
+def bearer_headers(user: User) -> dict[str, str]:
+    """Return bearer authentication headers for a user."""
+    token = create_access_token({"sub": str(user.id)})
+    return {"Authorization": f"Bearer {token}"}
+
+
 class TestLoginEndpoint:
     """Test the POST /auth/login endpoint."""
 
@@ -79,6 +85,13 @@ class TestLoginEndpoint:
         assert "access_token" in data
         assert data["token_type"] == "bearer"
         assert len(data["access_token"]) > 0
+        assert data["user"] == {
+            "id": str(registered_user.id),
+            "username": registered_user.username,
+            "email": str(registered_user.email),
+            "is_active": True,
+            "created_at": registered_user.created_at.isoformat(),
+        }
 
     def test_login_with_invalid_email(self, client: TestClient):
         """Should return 401 for non-existent email."""
@@ -242,6 +255,44 @@ class TestTokenValidation:
 
         payload = verify_token(expired_token)
         assert payload is None
+
+
+class TestCurrentUserEndpoint:
+    """Test the authenticated current-user endpoint."""
+
+    def test_requires_authentication(self, client: TestClient):
+        """Should reject requests without bearer credentials."""
+        response = client.get("/api/v1/users/me")
+        assert response.status_code == 403
+
+    def test_returns_authenticated_user(self, client: TestClient, registered_user: User):
+        """Should return the identity represented by the bearer token."""
+        response = client.get(
+            "/api/v1/users/me",
+            headers=bearer_headers(registered_user),
+        )
+        assert response.status_code == 200
+        assert response.json()["id"] == str(registered_user.id)
+        assert response.json()["email"] == registered_user.email
+
+    def test_rejects_token_for_deleted_user(self, client: TestClient):
+        """Should reject a valid token whose user no longer exists."""
+        missing_user = User.register(
+            username="missinguser",
+            email="missing@example.com",
+            plain_password="SecurePass123!",
+        )
+        response = client.get(
+            "/api/v1/users/me",
+            headers=bearer_headers(missing_user),
+        )
+        assert response.status_code == 401
+        assert response.headers["www-authenticate"] == "Bearer"
+
+    def test_arbitrary_user_route_is_removed(self, client: TestClient, registered_user: User):
+        """Should not expose a route for looking up arbitrary users."""
+        response = client.get(f"/api/v1/users/{registered_user.id}")
+        assert response.status_code == 404
 
 
 class TestAuthenticationIntegration:
