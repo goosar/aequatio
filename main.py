@@ -2,14 +2,14 @@ from fastapi import FastAPI  # type: ignore[import]
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.routers import router as v1_router
+from app.core.config import Settings, settings
 
 
-def create_app() -> FastAPI:
+def create_app(app_settings: Settings = settings) -> FastAPI:
     _app = FastAPI(title="aequatio", version="1.0.0")
-    # Enable CORS for the Vite dev server (adjust origins as needed)
     _app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:5173"],  # change to ["*"] for all origins (dev only)
+        allow_origins=list(app_settings.cors_origins),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

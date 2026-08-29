@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: sqlite:///:memory:
+      SECRET_KEY: ci-only-secret-key-not-for-production
     strategy:
       matrix:
         python-version: [3.12]
