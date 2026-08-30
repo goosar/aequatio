@@ -92,11 +92,11 @@ export default function ExpenseForm({
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Add New Expense</h2>
+    <div className="bg-white p-6 rounded-lg shadow-lg border-2 border-blue-200">
+      <h2 className="text-xl font-bold mb-4 text-gray-900">Add New Expense</h2>
       
       {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+        <div className="mb-4 bg-red-100 border-2 border-red-400 text-red-900 px-4 py-3 rounded-md font-semibold">
           {error}
         </div>
       )}
@@ -108,7 +108,7 @@ export default function ExpenseForm({
           </label>
           <input
             type="text"
-            className="w-full border px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500"
+            className="w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 bg-white"
             placeholder="e.g., Grocery Shopping"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -126,7 +126,7 @@ export default function ExpenseForm({
               type="number"
               step="0.01"
               min="0.01"
-              className="w-full border px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500"
+              className="w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 bg-white"
               placeholder="0.00"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
@@ -139,7 +139,7 @@ export default function ExpenseForm({
               Currency
             </label>
             <select
-              className="w-full border px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500"
+              className="w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 bg-white"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
               disabled={isLoading}
@@ -158,7 +158,7 @@ export default function ExpenseForm({
             Category *
           </label>
           <select
-            className="w-full border px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500"
+            className="w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 bg-white"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             disabled={isLoading}
@@ -178,7 +178,7 @@ export default function ExpenseForm({
           </label>
           <input
             type="text"
-            className="w-full border px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500"
+            className="w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 bg-white"
             placeholder="e.g., Rewe, Amazon"
             value={vendor}
             onChange={(e) => setVendor(e.target.value)}
@@ -191,7 +191,7 @@ export default function ExpenseForm({
             Description
           </label>
           <textarea
-            className="w-full border px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500"
+            className="w-full border-2 border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-gray-900 bg-white"
             placeholder="Optional notes about this expense"
             rows={3}
             value={description}
@@ -203,7 +203,7 @@ export default function ExpenseForm({
         <div className="text-right">
           <button
             type="submit"
-            className="px-6 py-2 bg-rose-600 text-white rounded-md shadow hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 bg-blue-700 text-white rounded-md shadow hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
             disabled={isLoading}
           >
             {isLoading ? 'Adding...' : 'Add Expense'}
