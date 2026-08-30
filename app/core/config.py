@@ -1,16 +1,54 @@
-import os
+from dataclasses import dataclass
+from os import environ as process_environment
+from typing import Mapping
 
-from dotenv import load_dotenv  # type: ignore[import-not-found]
+from dotenv import load_dotenv
 
-load_dotenv()  # Load environment variables from .env file
+PLACEHOLDER_SECRET = "your-secret-key-change-in-production"
 
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+@dataclass(frozen=True)
+class Settings:
+    database_url: str
+    rabbitmq_url: str
+    secret_key: str
+    algorithm: str
+    access_token_expire_minutes: int
+    cors_origins: tuple[str, ...]
 
-# RabbitMQ configuration
-RABBITMQ_URL = os.getenv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672/")
 
-# JWT Authentication configuration
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
+    values = process_environment if environ is None else environ
+    database_url = values.get("DATABASE_URL", "").strip()
+    secret_key = values.get("SECRET_KEY", "")
+    if not database_url:
+        raise ValueError("DATABASE_URL is required")
+    if not secret_key:
+        raise ValueError("SECRET_KEY is required")
+    if secret_key == PLACEHOLDER_SECRET or len(secret_key) < 32:
+        raise ValueError(
+            "SECRET_KEY must contain at least 32 characters and must not use the placeholder"
+        )
+
+    raw_origins = values.get("CORS_ORIGINS", "http://localhost:5173")
+    cors_origins = tuple(origin.strip() for origin in raw_origins.split(",") if origin.strip())
+    if not cors_origins:
+        raise ValueError("CORS_ORIGINS must contain at least one origin")
+
+    try:
+        access_token_expire_minutes = int(values.get("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+    except ValueError:
+        raise ValueError("ACCESS_TOKEN_EXPIRE_MINUTES must be an integer") from None
+
+    return Settings(
+        database_url=database_url,
+        rabbitmq_url=values.get("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672/"),
+        secret_key=secret_key,
+        algorithm="HS256",
+        access_token_expire_minutes=access_token_expire_minutes,
+        cors_origins=cors_origins,
+    )
+
+
+load_dotenv()
+settings = load_settings()

@@ -26,6 +26,8 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: "postgresql+psycopg2://postgres:postgres@db:5432/aequatio"
+      SECRET_KEY: "docker-development-secret-key-not-production"
+      CORS_ORIGINS: "http://localhost:5173"
       RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/" # keep for runtime; add rabbitmq service if needed
     volumes:
       # mount project, but override .venv with a named volume to avoid host venv conflicts (Windows)

@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import type { TokenResponse, User } from '../types';
 
 interface LoginFormProps {
   onClose: () => void;
-  onSuccess: (user: { id: string; username: string; email: string }, token: string) => void;
+  onSuccess: (user: User, token: string) => void;
 }
 
 interface LoginData {
@@ -65,30 +66,8 @@ export default function LoginForm({ onClose, onSuccess }: LoginFormProps) {
         throw new Error(errorData.detail || 'Login failed');
       }
 
-      const data = await response.json();
-      
-      // Decode JWT to get user ID
-      const tokenParts = data.access_token.split('.');
-      const payload = JSON.parse(atob(tokenParts[1]));
-      const userId = payload.sub;
-      
-      // Fetch user data using the token
-      const userResponse = await fetch(`http://localhost:8000/api/v1/users/${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${data.access_token}`,
-        },
-      });
-
-      if (userResponse.ok) {
-        const userData = await userResponse.json();
-        onSuccess(userData, data.access_token);
-      } else {
-        // If we can't fetch user data, create a minimal user object
-        onSuccess(
-          { id: userId, username: formData.email.split('@')[0], email: formData.email },
-          data.access_token
-        );
-      }
+      const data: TokenResponse = await response.json();
+      onSuccess(data.user, data.access_token);
     } catch (error) {
       setErrors({
         general: error instanceof Error ? error.message : 'An error occurred during login',

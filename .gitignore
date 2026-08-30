@@ -201,6 +201,9 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# Local isolated development worktrees
+.worktrees/
+
 # Marimo
 marimo/_static/
 marimo/_lsp/

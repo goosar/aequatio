@@ -7,6 +7,7 @@ Compare with the current routers.py to see the difference in approach.
 """
 
 from datetime import timedelta
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -17,11 +18,12 @@ from app.api.v1.schemas.expense import ExpenseCreateCommand, ExpenseResponse
 from app.api.v1.schemas.user import UserRegisterRequest, UserResponse
 from app.application.services.expense_service import ExpenseApplicationService
 from app.application.services.user_service import UserApplicationService
-from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import create_access_token, get_current_user_id
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.get(
@@ -133,11 +135,12 @@ async def register_user(
 
         raise HTTPException(status_code=status_code, detail=error_msg) from e
 
-    except Exception as e:
+    except Exception as exc:
+        logger.exception("Unexpected registration failure")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Registration failed: {str(e)}",
-        ) from e
+            detail="Registration failed",
+        ) from exc
 
 
 @router.post(
@@ -158,7 +161,8 @@ async def login(
         user_service: Injected application service.
 
     Returns:
-        TokenResponse with JWT access token.
+        TokenResponse with JWT access token and authenticated user's public
+        profile.
 
     Raises:
         HTTPException: 401 if credentials are invalid or user is inactive.
@@ -173,7 +177,14 @@ async def login(
         Response:
         {
             "access_token": "eyJhbGc...",
-            "token_type": "bearer"
+            "token_type": "bearer",
+            "user": {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "username": "john_doe",
+                "email": "john@example.com",
+                "is_active": true,
+                "created_at": "2025-10-18T10:30:00Z"
+            }
         }
     """
     # Authenticate user
@@ -190,34 +201,31 @@ async def login(
         )
 
     # Create JWT token
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = create_access_token(
         data={"sub": str(user.id)},
         expires_delta=access_token_expires,
     )
 
-    return TokenResponse(access_token=access_token, token_type="bearer")
+    return TokenResponse(
+        access_token=access_token,
+        token_type="bearer",
+        user=UserResponse.model_validate(user),
+    )
 
 
-@router.get("/users/{user_id}", response_model=UserResponse, tags=["Users"])
-async def get_user(user_id: UUID, user_service: UserApplicationService = Depends(get_user_service)):
-    """Get user by ID.
-
-    Args:
-        user_id: User identifier (UUID).
-        user_service: Injected application service.
-
-    Returns:
-        User data.
-
-    Raises:
-        HTTPException: 404 if user not found.
-    """
+@router.get("/users/me", response_model=UserResponse, tags=["Users"])
+async def get_current_user(
+    user_id: UUID = Depends(get_current_user_id),
+    user_service: UserApplicationService = Depends(get_user_service),
+) -> UserResponse:
+    """Get the authenticated user's profile."""
     user = user_service.get_user_by_id(user_id)
-
-    if not user:
+    if user is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     return UserResponse.model_validate(user)

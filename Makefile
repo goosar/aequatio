@@ -7,6 +7,10 @@ APP_IMAGE ?= aequatio-app
 DB_URL ?= postgresql+psycopg2://postgres:postgres@db:5432/aequatio
 # Local DB URL for running app outside Docker
 LOCAL_DB_URL ?= postgresql+psycopg2://postgres:postgres@localhost:5432/aequatio
+# Local-only runtime values. Never use these outside development.
+LOCAL_SECRET_KEY ?= local-development-secret-key-not-production
+LOCAL_CORS_ORIGINS ?= http://localhost:5173
+TEST_DATABASE_URL ?= sqlite:///:memory:
 # default compose network (project_default). Override if your project name differs.
 NETWORK ?= aequatio_default
 
@@ -62,7 +66,7 @@ dev:
 	@echo "Building application image for migrations"
 	@docker build -t $(APP_IMAGE) .
 	@echo "Running migrations in a temporary container (network: $(NETWORK))"
-	@docker run --rm --network $(NETWORK) -e DATABASE_URL="$(DB_URL)" $(APP_IMAGE) uv run alembic upgrade head
+	@docker run --rm --network $(NETWORK) -e DATABASE_URL="$(DB_URL)" -e SECRET_KEY="$(LOCAL_SECRET_KEY)" -e CORS_ORIGINS="$(LOCAL_CORS_ORIGINS)" $(APP_IMAGE) uv run alembic upgrade head
 	@echo "Dev environment ready"
 	@echo "Frontend: http://127.0.0.1:5173"
 	@echo "App:      http://127.0.0.1:8000"
@@ -76,13 +80,13 @@ db-only:
 
 migrate-local:
 	@echo "Running migrations against local database..."
-	@powershell -Command "$$env:DATABASE_URL='$(LOCAL_DB_URL)'; uv run alembic upgrade head"
+	@powershell -Command "$$env:DATABASE_URL='$(LOCAL_DB_URL)'; $$env:SECRET_KEY='$(LOCAL_SECRET_KEY)'; $$env:CORS_ORIGINS='$(LOCAL_CORS_ORIGINS)'; uv run alembic upgrade head"
 	@echo "Migrations complete"
 
 run-local:
 	@echo "Starting FastAPI application locally..."
 	@echo "Make sure you ran 'make db-only' and 'make migrate-local' first!"
-	@powershell -Command "$$env:DATABASE_URL='$(LOCAL_DB_URL)'; uv run uvicorn main:app --host 127.0.0.1 --port 8000 --reload"
+	@powershell -Command "$$env:DATABASE_URL='$(LOCAL_DB_URL)'; $$env:SECRET_KEY='$(LOCAL_SECRET_KEY)'; $$env:CORS_ORIGINS='$(LOCAL_CORS_ORIGINS)'; uv run uvicorn main:app --host 127.0.0.1 --port 8000 --reload"
 
 run-frontend:
 	@echo "Starting frontend development server..."
@@ -98,7 +102,7 @@ local: db-only migrate-local
 	@echo "Now run: make run-local"
 	@echo ""
 	@echo "Or manually with PowerShell:"
-	@echo "  $$env:DATABASE_URL='$(LOCAL_DB_URL)'; uv run uvicorn main:app --host 127.0.0.1 --port 8000 --reload"
+	@echo "  $$env:DATABASE_URL='$(LOCAL_DB_URL)'; $$env:SECRET_KEY='$(LOCAL_SECRET_KEY)'; $$env:CORS_ORIGINS='$(LOCAL_CORS_ORIGINS)'; uv run uvicorn main:app --host 127.0.0.1 --port 8000 --reload"
 	@echo "=========================================="
 	@echo "=========================================="
 
@@ -127,7 +131,7 @@ alembic-revision-local:
 ifndef M
 	$(error Missing message: make alembic-revision-local M="your message")
 endif
-	@powershell -Command "$$env:DATABASE_URL='$(LOCAL_DB_URL)'; uv run alembic revision --autogenerate -m '$(M)'"
+	@powershell -Command "$$env:DATABASE_URL='$(LOCAL_DB_URL)'; $$env:SECRET_KEY='$(LOCAL_SECRET_KEY)'; $$env:CORS_ORIGINS='$(LOCAL_CORS_ORIGINS)'; uv run alembic revision --autogenerate -m '$(M)'"
 
 lint:
 	uv tool run ruff check .
@@ -139,14 +143,14 @@ format:
 	uv tool run black .
 
 test:
-	uv run pytest -q
+	@powershell -Command "$$env:DATABASE_URL='$(TEST_DATABASE_URL)'; $$env:SECRET_KEY='$(LOCAL_SECRET_KEY)'; $$env:CORS_ORIGINS='$(LOCAL_CORS_ORIGINS)'; uv run pytest -q"
 
 coverage:
-	uv run coverage run -m pytest
+	@powershell -Command "$$env:DATABASE_URL='$(TEST_DATABASE_URL)'; $$env:SECRET_KEY='$(LOCAL_SECRET_KEY)'; $$env:CORS_ORIGINS='$(LOCAL_CORS_ORIGINS)'; uv run coverage run -m pytest"
 	uv run coverage report
 
 coverage-html:
-	uv run coverage run -m pytest
+	@powershell -Command "$$env:DATABASE_URL='$(TEST_DATABASE_URL)'; $$env:SECRET_KEY='$(LOCAL_SECRET_KEY)'; $$env:CORS_ORIGINS='$(LOCAL_CORS_ORIGINS)'; uv run coverage run -m pytest"
 	uv run coverage html
 	@echo "Coverage report generated in htmlcov/index.html"
 
