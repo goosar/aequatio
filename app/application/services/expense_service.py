@@ -41,3 +41,7 @@ class ExpenseApplicationService:
         saved_expense = self.expense_repo.save(expense)
         self.db.commit()
         return saved_expense
+
+    def get_user_expenses(self, user_id: UUID) -> list[ExpenseEntity]:
+        """Retrieve all expenses belonging to the authenticated user."""
+        return self.expense_repo.get_by_user_id(user_id)

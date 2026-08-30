@@ -6,8 +6,8 @@ to hide database/infrastructure concerns from the API layer.
 Compare with the current routers.py to see the difference in approach.
 """
 
-from datetime import timedelta
 import logging
+from datetime import timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -81,6 +81,22 @@ async def create_expense(
     """
     expense = expense_service.create_expense(expense_data, user_id)
     return ExpenseResponse.model_validate(expense)
+
+
+@router.get(
+    "/expenses",
+    response_model=list[ExpenseResponse],
+    status_code=status.HTTP_200_OK,
+    summary="Get all expenses for the authenticated user",
+    tags=["Expenses"],
+)
+async def get_user_expenses(
+    expense_service: ExpenseApplicationService = Depends(get_expense_service),
+    user_id: UUID = Depends(get_current_user_id),
+) -> list[ExpenseResponse]:
+    """Retrieve all expenses for the authenticated user."""
+    expenses = expense_service.get_user_expenses(user_id)
+    return [ExpenseResponse.model_validate(expense) for expense in expenses]
 
 
 @router.post(

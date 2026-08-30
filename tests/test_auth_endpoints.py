@@ -1,6 +1,7 @@
 """Tests for authentication endpoints."""
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -10,6 +11,7 @@ from app.api.v1.routers import get_user_service
 from app.core.database import get_db
 from app.core.security import create_access_token
 from app.domain.entities.user import User
+from app.persistence.models.expense import ExpenseCategory, SQLAlchemyExpense
 from app.persistence.models.user import User as UserModel
 from main import app
 
@@ -345,6 +347,48 @@ class TestAuthenticationIntegration:
 
         assert login_response.status_code == 200
         assert "access_token" in login_response.json()
+
+
+class TestExpenseListingEndpoint:
+    """Test authenticated expense listing behavior."""
+
+    def test_lists_only_expenses_owned_by_authenticated_user(
+        self, client: TestClient, db: Session, registered_user: User
+    ):
+        owned = SQLAlchemyExpense(
+            id=uuid4(),
+            fk_user_id=registered_user.id,
+            title="Owned expense",
+            amount=12.50,
+            currency="EUR",
+            category=ExpenseCategory.OTHER,
+            expensedate=datetime.now(timezone.utc),
+        )
+        other_user = User.register(
+            username="otheruser",
+            email="other@example.com",
+            plain_password="SecurePass123!",
+        )
+        other = SQLAlchemyExpense(
+            id=uuid4(),
+            fk_user_id=other_user.id,
+            title="Other expense",
+            amount=99.00,
+            currency="EUR",
+            category=ExpenseCategory.OTHER,
+            expensedate=datetime.now(timezone.utc),
+        )
+        db.add_all([owned, other])
+        db.commit()
+
+        token = create_access_token({"sub": str(registered_user.id)})
+        response = client.get(
+            "/api/v1/expenses",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        assert response.status_code == 200
+        assert [expense["title"] for expense in response.json()] == ["Owned expense"]
 
     def test_multiple_logins_generate_different_tokens(
         self, client: TestClient, registered_user: User

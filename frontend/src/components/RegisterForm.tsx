@@ -110,12 +110,12 @@ export default function RegisterForm({ onClose, onSuccess }: RegisterFormProps) 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 border border-blue-100">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
+          <h2 className="text-2xl font-bold text-blue-900">Create Account</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+            className="text-blue-400 hover:text-blue-700 text-2xl leading-none"
             aria-label="Close"
           >
             ×
@@ -139,10 +139,10 @@ export default function RegisterForm({ onClose, onSuccess }: RegisterFormProps) 
               id="username"
               value={formData.username}
               onChange={(e) => handleChange('username', e.target.value)}
-              className={`w-full px-3 py-2 border text-white rounded-md focus:outline-none focus:ring-2 ${
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
                 errors.username
                   ? 'border-red-300 focus:ring-red-500'
-                  : 'border-gray-300 focus:ring-indigo-500'
+                  : 'border-gray-300 focus:ring-blue-500'
               }`}
               placeholder="john_doe"
               disabled={isLoading}
@@ -162,10 +162,10 @@ export default function RegisterForm({ onClose, onSuccess }: RegisterFormProps) 
               id="email"
               value={formData.email}
               onChange={(e) => handleChange('email', e.target.value)}
-              className={`w-full px-3 py-2 border text-white rounded-md focus:outline-none focus:ring-2 ${
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
                 errors.email
                   ? 'border-red-300 focus:ring-red-500'
-                  : 'border-gray-300 focus:ring-indigo-500'
+                  : 'border-gray-300 focus:ring-blue-500'
               }`}
               placeholder="john@example.com"
               disabled={isLoading}
@@ -185,10 +185,10 @@ export default function RegisterForm({ onClose, onSuccess }: RegisterFormProps) 
               id="password"
               value={formData.password}
               onChange={(e) => handleChange('password', e.target.value)}
-              className={`w-full px-3 py-2 border text-white rounded-md focus:outline-none focus:ring-2 ${
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
                 errors.password
                   ? 'border-red-300 focus:ring-red-500'
-                  : 'border-gray-300 focus:ring-indigo-500'
+                  : 'border-gray-300 focus:ring-blue-500'
               }`}
               placeholder="••••••••"
               disabled={isLoading}
@@ -216,7 +216,7 @@ export default function RegisterForm({ onClose, onSuccess }: RegisterFormProps) 
                   setErrors((prev) => ({ ...prev, password: undefined }));
                 }
               }}
-              className="w-full px-3 py-2 border text-white border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="••••••••"
               disabled={isLoading}
             />
@@ -234,7 +234,7 @@ export default function RegisterForm({ onClose, onSuccess }: RegisterFormProps) 
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isLoading}
             >
               {isLoading ? 'Creating Account...' : 'Register'}

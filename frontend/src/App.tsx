@@ -47,8 +47,18 @@ function App() {
   }
 
   async function fetchExpenses(authToken: string) {
-    // TODO: Implement fetch expenses from API
-    console.log('Fetching expenses with token:', authToken)
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/expenses', {
+        headers: { Authorization: `Bearer ${authToken}` },
+      })
+      if (!response.ok) {
+        console.error('Failed to fetch expenses:', response.statusText)
+        return
+      }
+      setExpenses(await response.json())
+    } catch (error) {
+      console.error('Error fetching expenses:', error)
+    }
   }
 
   function handleExpenseAdded(expense: Expense) {
@@ -56,33 +66,33 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-blue-700 shadow-lg">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-rose-600">Aequatio</h1>
+          <h1 className="text-2xl font-bold text-white">Aequatio</h1>
           <div className="flex gap-3">
             {!user ? (
               <>
                 <button
                   onClick={() => setShowLogin(true)}
-                  className="px-4 py-2 text-rose-600 border border-rose-600 rounded-md hover:bg-rose-50"
+                  className="px-4 py-2 text-white border-2 border-white rounded-md hover:bg-blue-800 font-semibold"
                 >
                   Login
                 </button>
                 <button
                   onClick={() => setShowRegister(true)}
-                  className="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700"
+                  className="px-4 py-2 bg-white text-blue-700 rounded-md hover:bg-blue-50 font-semibold"
                 >
                   Register
                 </button>
               </>
             ) : (
               <div className="flex items-center gap-4">
-                <span className="text-gray-700">Welcome, {user.username}!</span>
+                <span className="text-white font-semibold">Welcome, {user.username}!</span>
                 <button
                   onClick={handleLogout}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-4 py-2 text-white border-2 border-white rounded-md hover:bg-blue-800 font-semibold"
                 >
                   Logout
                 </button>
@@ -95,21 +105,21 @@ function App() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-6 py-8">
         {!user ? (
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Expense Tracker</h2>
-            <p className="text-gray-600 mb-6">
+          <div className="bg-white rounded-lg shadow-lg p-8 text-center border-2 border-blue-200">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Expense Tracker</h2>
+            <p className="text-gray-800 mb-6 text-lg">
               Track your expenses easily. Please login or register to get started.
             </p>
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => setShowLogin(true)}
-                className="px-6 py-3 text-rose-600 border border-rose-600 rounded-md hover:bg-rose-50"
+                className="px-6 py-3 text-blue-700 border-2 border-blue-700 rounded-md hover:bg-blue-50 font-semibold"
               >
                 Login
               </button>
               <button
                 onClick={() => setShowRegister(true)}
-                className="px-6 py-3 bg-rose-600 text-white rounded-md hover:bg-rose-700"
+                className="px-6 py-3 bg-blue-700 text-white rounded-md hover:bg-blue-800 font-semibold"
               >
                 Register
               </button>

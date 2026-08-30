@@ -71,3 +71,13 @@ class SQLAlchemyExpenseRepository(ExpenseRepository):
         )
 
         return self._from_orm(orm_expense) if orm_expense else None
+
+    def get_by_user_id(self, user_id: UUID) -> list[ExpenseEntity]:
+        """Retrieve a user's expenses ordered by expense date descending."""
+        orm_expenses = (
+            self.db.query(SQLAlchemyExpense)
+            .filter(SQLAlchemyExpense.fk_user_id == user_id)
+            .order_by(SQLAlchemyExpense.expensedate.desc())
+            .all()
+        )
+        return [self._from_orm(orm_expense) for orm_expense in orm_expenses]

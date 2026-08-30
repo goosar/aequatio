@@ -116,3 +116,7 @@ class ExpenseRepository(ABC):
         Returns:
             Expense domain entity if found, None otherwise.
         """
+
+    @abstractmethod
+    def get_by_user_id(self, user_id: UUID) -> list[ExpenseEntity]:
+        """Find all expenses for a specific user."""
